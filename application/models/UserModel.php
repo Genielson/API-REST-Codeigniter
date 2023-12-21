@@ -41,11 +41,17 @@ class UserModel extends CI_Model {
 		return $this->verify_password_hash($password, $hash);
 	}
 
-	public function getUserIdFromUsername(String $username) {
+	public function getUserIdFromUserName(String $username) {
 		$this->db->select('id');
 		$this->db->from('users');
 		$this->db->where('username', $username);
 		return $this->db->get()->row('id');	
+	}
+
+	public function getUser(String $userId) {
+		$this->db->from('users');
+		$this->db->where('id', $userId);
+		return $this->db->get()->row();
 	}
 
 
