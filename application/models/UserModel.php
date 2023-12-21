@@ -15,50 +15,94 @@ class UserModel extends CI_Model {
 	 * @return void
 	 */
 	public function __construct() {
-		
 		parent::__construct();
 		$this->load->database();
-		
 	}
 
-	private function hash_password($password) {
+	/**
+	 * hashPassword function.
+	 * 
+	 * @access private
+	 * @param  string $password
+	 * @return string
+	 */
+	private function hashPassword(string $password): string {
 		return password_hash($password, PASSWORD_BCRYPT);
 	}
 
-	public function createUser(String $username, String $email, String $password) {
+	/**
+	 * createUser function.
+	 * 
+	 * @access public
+	 * @param  string $username
+	 * @param  string $email
+	 * @param  string $password
+	 * @return int
+	 */
+	public function createUser(string $username, string $email, string $password): int {
 		$data = array(
 			'username'   => $username,
 			'email'      => $email,
-			'password'   => $this->hash_password($password),
+			'password'   => $this->hashPassword($password),
 			'created_at' => date('Y-m-j H:i:s'),
 		);
 		$this->db->insert('users', $data);
 		return $this->db->insert_id(); 
-		
 	}
 
-	public function resolveUserLogin(String $username, String $password) {	
+	/**
+	 * resolveUserLogin function.
+	 * 
+	 * @access public
+	 * @param  string $username
+	 * @param  string $password
+	 * @return bool
+	 */
+	public function resolveUserLogin(string $username, string $password): bool {	
 		$this->db->select('password');
 		$this->db->from('users');
 		$this->db->where('username', $username);
 		$hash = $this->db->get()->row('password');
-		return $this->verify_password_hash($password, $hash);
+		return $this->verifyPasswordHash($password, $hash);
 	}
 
-	public function getUserIdFromUserName(String $username) {
+	/**
+	 * getUserIdFromUserName function.
+	 * 
+	 * @access public
+	 * @param  string $username
+	 * @return int|null
+	 */
+	public function getUserIdFromUserName(string $username): ?int {
 		$this->db->select('id');
 		$this->db->from('users');
 		$this->db->where('username', $username);
 		return $this->db->get()->row('id');	
 	}
 
-	public function getUser(String $userId) {
+	/**
+	 * getUser function.
+	 * 
+	 * @access public
+	 * @param  string $userId
+	 * @return object|null
+	 */
+	public function getUser(string $userId): ?object {
 		$this->db->from('users');
 		$this->db->where('id', $userId);
 		return $this->db->get()->row();
 	}
 
-	
-
+	/**
+	 * verifyPasswordHash function.
+	 * 
+	 * @access private
+	 * @param  string $password
+	 * @param  string $hash
+	 * @return bool
+	 */
+	private function verifyPasswordHash(string $password, string $hash): bool {
+		return password_verify($password, $hash);
+	}
 	
 }
