@@ -21,7 +21,7 @@ class UserModel extends CI_Model {
 		
 	}
 
-	public function createUser($username, $email, $password) {
+	public function createUser(String $username, String $email, String $password) {
 		$data = array(
 			'username'   => $username,
 			'email'      => $email,
@@ -33,12 +33,19 @@ class UserModel extends CI_Model {
 		
 	}
 
-	public function resolveUserLogin($username, $password) {	
+	public function resolveUserLogin(String $username, String $password) {	
 		$this->db->select('password');
 		$this->db->from('users');
 		$this->db->where('username', $username);
 		$hash = $this->db->get()->row('password');
 		return $this->verify_password_hash($password, $hash);
+	}
+
+	public function getUserIdFromUsername(String $username) {
+		$this->db->select('id');
+		$this->db->from('users');
+		$this->db->where('username', $username);
+		return $this->db->get()->row('id');	
 	}
 
 
