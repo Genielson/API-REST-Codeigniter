@@ -21,6 +21,10 @@ class UserModel extends CI_Model {
 		
 	}
 
+	private function hash_password($password) {
+		return password_hash($password, PASSWORD_BCRYPT);
+	}
+
 	public function createUser(String $username, String $email, String $password) {
 		$data = array(
 			'username'   => $username,
@@ -54,6 +58,7 @@ class UserModel extends CI_Model {
 		return $this->db->get()->row();
 	}
 
+	
 
 	
 }
