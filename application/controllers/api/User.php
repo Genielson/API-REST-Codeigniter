@@ -48,7 +48,6 @@ class User extends REST_Controller {
 
 
 	public function loginUser() {
-	
 		$this->form_validation->set_rules('username', 'Username', 'required|alpha_numeric');
 		$this->form_validation->set_rules('password', 'Password', 'required');
 
@@ -89,6 +88,20 @@ class User extends REST_Controller {
 		
 	}
 
+
+	public function logoutUser() {
+		if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true) {
+
+			foreach ($_SESSION as $key => $value) {
+				unset($_SESSION[$key]);
+			}
+            $this->response(['Logout com sucesso!'], REST_Controller::HTTP_OK);
+			
+		} else {
+            $this->response(['Houve um problema. Por favor, tente novamente'], REST_Controller::HTTP_OK);
+		}
+		
+	}
 	
-	
+
 }
