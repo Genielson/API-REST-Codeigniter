@@ -44,6 +44,32 @@ class Client extends REST_Controller {
         }
     }
 
+    /**
+     * INSERT | POST method.
+     *
+     * @return Response
+    */
+
+     public function store()
+    {
+        $headers = $this->input->request_headers(); 
+        if (isset($headers['Authorization'])) {
+            $clientToken = $this->authorization_token->validateToken($headers['Authorization']);
+            if ($clientToken['status'])
+            {  
+                $input = $this->input->post();
+                $data = $this->ClientModel->insert($input);
+                $this->response(['Cliente registrado com sucesso.'], REST_Controller::HTTP_OK);
+            }
+            else {
+                $this->response($clientToken);
+            }
+        }
+        else {
+            $this->response(['Falha de autenticação.'], REST_Controller::HTTP_OK);
+        }
+    } 
+
 
     /**
      * DELETE method.
