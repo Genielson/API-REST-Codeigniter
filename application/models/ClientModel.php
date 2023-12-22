@@ -9,5 +9,12 @@ class ClientModel extends CI_Model {
        $this->load->database();
     }
 
+
+    public function insert($data)
+    {
+        $this->db->insert('clients',$data);
+        return $this->db->insert_id(); 
+    } 
+
     
 }
