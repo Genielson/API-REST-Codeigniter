@@ -13,8 +13,7 @@ class User extends REST_Controller {
 		$this->load->model('UserModel');
 	}
 
-
-	public function registerUser() {
+	public function registerUser() : void {
 		$this->form_validation->set_rules('username', 'Username', 'trim|required|alpha_numeric|min_length[4]|is_unique[users.username]', array('is_unique' => 'Esse nome já existe, por favor, escolha outro! '));
 		$this->form_validation->set_rules('email', 'Email', 'trim|required|valid_email|is_unique[users.email]');
 		$this->form_validation->set_rules('password', 'Password', 'trim|required|min_length[6]');
@@ -27,10 +26,10 @@ class User extends REST_Controller {
 			$email    = $this->input->post('email');
 			$password = $this->input->post('password');
 			
-			if ($res = $this->user_model->create_user($username, $email, $password)) {
-                $token_data['uid'] = $res; 
-                $token_data['username'] = $username;
-                $tokenData = $this->authorization_token->generateToken($token_data);
+			if ($res = $this->UserModel->createUser($username, $email, $password)) {
+                $tokenData['uid'] = $res; 
+                $tokenData['username'] = $username;
+                $tokenData = $this->authorization_token->generateToken($tokenData);
                 $final = array();
                 $final['access_token'] = $tokenData;
                 $final['status'] = true;
@@ -47,23 +46,21 @@ class User extends REST_Controller {
 	}
 
 
-	public function loginUser() {
+	public function loginUser() : void {
 		$this->form_validation->set_rules('username', 'Username', 'required|alpha_numeric');
 		$this->form_validation->set_rules('password', 'Password', 'required');
 
 		if ($this->form_validation->run() == false) {
-			
             $this->response(['Regras de validação violadas'], REST_Controller::HTTP_OK);
-
 		} else {
 			
 			$username = $this->input->post('username');
 			$password = $this->input->post('password');
 			
-			if ($this->user_model->resolve_user_login($username, $password)) {
+			if ($this->UserModel->resolveUserLogin($username, $password)) {
 				
-				$user_id = $this->user_model->get_user_id_from_username($username);
-				$user    = $this->user_model->get_user($user_id);
+				$userId = $this->UserModel->getUserIdFromUsername($username);
+				$user    = $this->UserModel->getUser($userId);
 				
 				$_SESSION['user_id']      = (int)$user->id;
 				$_SESSION['username']     = (string)$user->username;
@@ -71,9 +68,9 @@ class User extends REST_Controller {
 				$_SESSION['is_confirmed'] = (bool)$user->is_confirmed;
 				$_SESSION['is_admin']     = (bool)$user->is_admin;
 
-                $token_data['uid'] = $user_id;
-                $token_data['username'] = $user->username; 
-                $tokenData = $this->authorization_token->generateToken($token_data);
+                $tokenData['uid'] = $user_id;
+                $tokenData['username'] = $user->username; 
+                $tokenData = $this->authorization_token->generateToken($tokenData);
                 $final = array();
                 $final['access_token'] = $tokenData;
                 $final['status'] = true;
@@ -89,7 +86,7 @@ class User extends REST_Controller {
 	}
 
 
-	public function logoutUser() {
+	public function logoutUser() : void {
 		if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true) {
 
 			foreach ($_SESSION as $key => $value) {
@@ -102,6 +99,6 @@ class User extends REST_Controller {
 		}
 		
 	}
-	
+
 
 }
