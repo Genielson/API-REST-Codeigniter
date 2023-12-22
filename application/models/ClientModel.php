@@ -18,12 +18,19 @@ class ClientModel extends CI_Model {
 
     public function show($id = 0)
     {
+        $result = NULL;
         if(!empty($id)){
-            $query = $this->db->get_where("products", ['id' => $id])->row_array();
+            $result = $this->db->get_where("clients", ['id' => $id])->row_array();
         }else{
-            $query = $this->db->get("products")->result();
+            $result = $this->db->get("clients")->result();
         }
-        return $query;
+        return $result;
+    }
+
+     public function update($data, $id)
+    {
+        $data = $this->db->update('clients', $data, array('id'=>$id));
+        return $this->db->affected_rows();
     }
 
     
