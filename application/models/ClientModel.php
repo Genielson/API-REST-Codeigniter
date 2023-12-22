@@ -33,5 +33,11 @@ class ClientModel extends CI_Model {
         return $this->db->affected_rows();
     }
 
+     public function delete($id)
+    {
+        $this->db->delete('clients', array('id'=>$id));
+        return $this->db->affected_rows();
+    }
+
     
 }
