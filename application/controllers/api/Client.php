@@ -43,6 +43,31 @@ class Client extends REST_Controller {
             $this->response(['Falha de autenticação.'], REST_Controller::HTTP_OK);
         }
     }
+
+
+    /**
+     * DELETE method.
+     *
+     * @return Response
+    */
+    public function delete($id)
+    { 
+        $headers = $this->input->request_headers(); 
+        if (isset($headers['Authorization'])) {
+            $clientToken = $this->authorization_token->validateToken($headers['Authorization']);
+            if ($clientToken['status'])
+            {
+                $response = $this->ClientModel->delete($id);
+                $response>0?$this->response(['Cliente deletado com sucesso!'], REST_Controller::HTTP_OK):$this->response(['Not deleted'], REST_Controller::HTTP_OK);
+            }
+            else {
+                $this->response($clientToken);
+            }
+        }
+        else {
+            $this->response(['Falha de autenticação.'], REST_Controller::HTTP_OK);
+        }
+    }
        
    	
 }
