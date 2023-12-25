@@ -72,6 +72,36 @@ class Client extends REST_Controller {
 
 
     /**
+     * UPDATE | PUT method.
+     *
+     * @return Response
+    */
+    public function update(int $id)
+    {
+        $headers = $this->input->request_headers(); 
+        if (isset($headers['Authorization'])) {
+            $clientToken = $this->authorization_token->validateToken($headers['Authorization']);
+            if ($clientToken['status'])
+            {
+                $headers = $this->input->request_headers(); 
+                $data['name'] = $headers['name'];
+                $data['price'] = $headers['price'];
+                $response = $this->ClientModel->update($data, $id);
+
+                $response>0?$this->response(['Cliente atualizado com sucesso.'], REST_Controller::HTTP_OK):$this->response(['Não atualizado'], REST_Controller::HTTP_OK);
+                // ------------- End -------------
+            }
+            else {
+                $this->response($clientToken);
+            }
+        }
+        else {
+            $this->response(['Falha de autenticação.'], REST_Controller::HTTP_OK);
+        }
+    }
+
+
+    /**
      * DELETE method.
      *
      * @return Response
