@@ -4,12 +4,8 @@
    use Restserver\Libraries\REST_Controller;
      
 class Client extends REST_Controller {
-    
-	  /**
-     * CONSTRUCTOR | LOAD MODEL
-     *
-     * @return Response
-    */
+
+
     public function __construct() {
        parent::__construct();
        $this->load->library('Authorization_Token');	
@@ -17,12 +13,8 @@ class Client extends REST_Controller {
     }
 
 
-    /**
-     * SHOW | GET method.
-     *
-     * @return Response
-    */
-    public function indexGet(int $id = 0)
+
+    public function indexClient(int $id = 0)
     {
         $headers = $this->input->request_headers(); 
         if (isset($headers['Authorization'])) {
@@ -44,13 +36,8 @@ class Client extends REST_Controller {
         }
     }
 
-    /**
-     * INSERT | POST method.
-     *
-     * @return Response
-    */
 
-     public function store()
+     public function storeClient()
     {
         $headers = $this->input->request_headers(); 
         if (isset($headers['Authorization'])) {
@@ -71,12 +58,35 @@ class Client extends REST_Controller {
     } 
 
 
-    /**
-     * DELETE method.
-     *
-     * @return Response
-    */
-    public function delete($id)
+
+    public function updateClient(int $id)
+    {
+        $headers = $this->input->request_headers(); 
+        if (isset($headers['Authorization'])) {
+            $clientToken = $this->authorization_token->validateToken($headers['Authorization']);
+            if ($clientToken['status'])
+            {
+                $headers = $this->input->request_headers(); 
+                $data['name'] = $headers['name'];
+                $data['price'] = $headers['price'];
+                $response = $this->ClientModel->update($data, $id);
+
+                $response>0? $this->response(['Cliente atualizado com sucesso.'],
+                    REST_Controller::HTTP_OK):$this->response(['Não atualizado'],
+                    REST_Controller::HTTP_OK);
+            }
+            else {
+                $this->response($clientToken);
+            }
+        }
+        else {
+            $this->response(['Falha de autenticação.'], REST_Controller::HTTP_OK);
+        }
+    }
+
+
+
+    public function deleteClient($id)
     { 
         $headers = $this->input->request_headers(); 
         if (isset($headers['Authorization'])) {
@@ -84,7 +94,9 @@ class Client extends REST_Controller {
             if ($clientToken['status'])
             {
                 $response = $this->ClientModel->delete($id);
-                $response>0?$this->response(['Cliente deletado com sucesso!'], REST_Controller::HTTP_OK):$this->response(['Not deleted'], REST_Controller::HTTP_OK);
+                $response>0?$this->response(['Cliente deletado com sucesso!'],
+                    REST_Controller::HTTP_OK):$this->response(['Not deleted'],
+                    REST_Controller::HTTP_OK);
             }
             else {
                 $this->response($clientToken);

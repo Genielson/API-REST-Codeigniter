@@ -6,8 +6,9 @@ use Restserver\Libraries\REST_Controller;
 
 class User extends REST_Controller {
 
-	
-	public function __construct() {
+
+
+    public function __construct() {
 		parent::__construct();
       $this->load->library('Authorization_Token');
 		$this->load->model('UserModel');
@@ -68,7 +69,7 @@ class User extends REST_Controller {
 				$_SESSION['is_confirmed'] = (bool)$user->is_confirmed;
 				$_SESSION['is_admin']     = (bool)$user->is_admin;
 
-                $tokenData['uid'] = $user_id;
+                $tokenData['uid'] = $userId;
                 $tokenData['username'] = $user->username; 
                 $tokenData = $this->authorization_token->generateToken($tokenData);
                 $final = array();
