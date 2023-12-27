@@ -13,6 +13,7 @@ class Client extends CI_Controller {
         parent::__construct();
         $this->load->library('Authorization_Token');
         $this->load->model('ClientModel');
+        $this->load->model('AddressModel');
     }
 
     public function getClient(int $id = 0)
@@ -42,15 +43,27 @@ class Client extends CI_Controller {
 
      public function createClient()
     {
-
         $headers = $this->input->request_headers();
         if (isset($headers['Authorization'])) {
             $clientToken = $this->authorization_token->validateToken($headers['Authorization']);
             if ($clientToken['status'])
             {
                 $input = $this->input->post();
-                $this->ClientModel->insert($input);
-                $this->sendJson(['Cliente registrado com sucesso.'], 200);
+                $clientID = $this->ClientModel->insert($input);
+                if ($clientID) {
+                    $addressData['cep'] = $input['cep'];
+                    $addressData['street'] = $input['street'];
+                    $addressData['complement'] = $input['complement'];
+                    $addressData['neighborhood'] = $input['neighborhood'];
+                    $addressData['city'] = $input['city'];
+                    $addressData['state'] = $input['state'];
+                    $addressData['id_client'] = $clientID;
+                    $this->AddressModel->insert($addressData);
+                    $this->sendJson(['Cliente registrado com sucesso.'], 200);
+                } else {
+                    $this->sendJson(['Falha ao registrar o cliente.'], 500);
+                }
+
             }
             else {
                 $this->sendJson($clientToken);
@@ -63,30 +76,31 @@ class Client extends CI_Controller {
 
 
 
-    public function updateClient(int $id)
+    public function updateClient($id)
     {
         $headers = $this->input->request_headers();
         if (isset($headers['Authorization'])) {
             $clientToken = $this->authorization_token->validateToken($headers['Authorization']);
-            if ($clientToken['status'])
-            {
-                $headers = $this->input->request_headers();
-                $data['name'] = $headers['name'];
-                $data['price'] = $headers['price'];
-                $response = $this->ClientModel->update($data, $id);
-
-
-                $response>0? $this->sendJson(['Cliente atualizado com sucesso.'],
-                    REST_Controller::HTTP_OK):$this->sendJson(['Não atualizado'],
-                    REST_Controller::HTTP_OK);
-
-                $response>0?$this->sendJson(['Cliente atualizado com sucesso.'], REST_Controller::HTTP_OK):$this->response(['Não atualizado'], REST_Controller::HTTP_OK);
-            }
-            else {
+            if ($clientToken['status']) {
+                $existingClient = $this->ClientModel->getClientById($id);
+                if ($existingClient) {
+                    $input = $this->input->post();
+                    $this->ClientModel->update($id, $input);
+                    $addressData['cep'] = $input['cep'];
+                    $addressData['street'] = $input['street'];
+                    $addressData['complement'] = $input['complement'];
+                    $addressData['neighborhood'] = $input['neighborhood'];
+                    $addressData['city'] = $input['city'];
+                    $addressData['state'] = $input['state'];
+                    $this->AddressModel->updateAddressByClientId($id, $addressData);
+                    $this->sendJson(['Cliente atualizado com sucesso.'], 200);
+                } else {
+                    $this->sendJson(['Cliente não encontrado.'], 404);
+                }
+            } else {
                 $this->sendJson($clientToken);
             }
-        }
-        else {
+        } else {
             $this->sendJson(['Token é necessário. '], 404);
         }
     }
