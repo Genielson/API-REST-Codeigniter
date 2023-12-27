@@ -16,120 +16,172 @@ class Client extends CI_Controller {
         $this->load->model('AddressModel');
     }
 
-    public function getClient(int $id = 0)
+    public function getClient()
     {
-        $headers = $this->input->request_headers();
-        if (isset($headers['Authorization'])) {
-            $decodedToken = $this->authorization_token->validateToken($headers['Authorization']);
-
-            if ($decodedToken['status'])
-            {
-
-                if(!empty($id)){
-                    $this->data = $this->ClientModel->show($id);
-                } else {
-                    $this->data = $this->ClientModel->show();
-                }
-                $this->sendJson($this->data, 200);
+        try {
+            $authorizationHeader = $this->input->request_headers('Authorization');
+            if (!$authorizationHeader) {
+                return $this->sendJson(['response' => 'Token é necessário.'], 404);
             }
-            else {
-                $this->sendJson($decodedToken);
+            if (!$this->isValidClientId()) {
+                return $this->sendJson(['response' => validation_errors()], 400);
             }
-        } else {
-            $this->sendJson(['Token é necessário. '], 404);
+            $id = $this->input->post('id');
+            $decodedToken = $this->authorization_token->validateToken($authorizationHeader);
+            if (!$decodedToken['status']) {
+                return $this->sendJson(['response' => $decodedToken], 200);
+            }
+            $this->data = $this->getClientData($id);
+            return $this->sendJson(['response' => $this->data], 200);
+        }catch (Exception $e){
+            return $this->sendJson(['response' =>
+                'Ocorreu um erro ao recuperar o cliente.'], 500);
         }
     }
 
 
      public function createClient()
     {
-        $headers = $this->input->request_headers();
-        if (isset($headers['Authorization'])) {
-            $clientToken = $this->authorization_token->validateToken($headers['Authorization']);
-            if ($clientToken['status'])
-            {
-                $input = $this->input->post();
-                $clientID = $this->ClientModel->insert($input);
-                if ($clientID) {
-                    $addressData['cep'] = $input['cep'];
-                    $addressData['street'] = $input['street'];
-                    $addressData['complement'] = $input['complement'];
-                    $addressData['neighborhood'] = $input['neighborhood'];
-                    $addressData['city'] = $input['city'];
-                    $addressData['state'] = $input['state'];
-                    $addressData['id_client'] = $clientID;
-                    $this->AddressModel->insert($addressData);
-                    $this->sendJson(['Cliente registrado com sucesso.'], 200);
-                } else {
-                    $this->sendJson(['Falha ao registrar o cliente.'], 500);
-                }
-
+        try {
+            $authorizationHeader = $this->input->request_headers('Authorization');
+            if (!$authorizationHeader) {
+                return $this->sendJson(['response' => 'Token é necessário.'], 404);
             }
-            else {
-                $this->sendJson($clientToken);
+            if (!$this->isValidFormData()) {
+                return $this->sendJson(['response' => validation_errors()], 400);
             }
-        }
-        else {
-            $this->sendJson(['Token é necessário. '], 404);
+            $clientToken = $this->authorization_token->validateToken($authorizationHeader);
+            if (!$clientToken['status']) {
+                return $this->sendJson(['response' => $clientToken], 500);
+            }
+            $input = $this->input->post();
+            $clientID = $this->ClientModel->insert($input);
+            if ($clientID) {
+                $this->createAddress($input, $clientID);
+                return $this->sendJson(['response' => 'Cliente registrado com sucesso.'], 200);
+            }
+            return $this->sendJson(['response' => 'Falha ao registrar o cliente.'], 500);
+        }catch (Exception $e){
+            return $this->sendJson(['response' =>
+                'Ocorreu um erro ao criar o cliente.'], 500);
         }
     }
 
-
-
-    public function updateClient($id)
+    public function updateClient()
     {
-        $headers = $this->input->request_headers();
-        if (isset($headers['Authorization'])) {
-            $clientToken = $this->authorization_token->validateToken($headers['Authorization']);
-            if ($clientToken['status']) {
-                $existingClient = $this->ClientModel->getClientById($id);
-                if ($existingClient) {
-                    $input = $this->input->post();
-                    $this->ClientModel->update($id, $input);
-                    $addressData['cep'] = $input['cep'];
-                    $addressData['street'] = $input['street'];
-                    $addressData['complement'] = $input['complement'];
-                    $addressData['neighborhood'] = $input['neighborhood'];
-                    $addressData['city'] = $input['city'];
-                    $addressData['state'] = $input['state'];
-                    $this->AddressModel->updateAddressByClientId($id, $addressData);
-                    $this->sendJson(['Cliente atualizado com sucesso.'], 200);
-                } else {
-                    $this->sendJson(['Cliente não encontrado.'], 404);
-                }
-            } else {
-                $this->sendJson($clientToken);
+        try {
+            $headers = $this->input->request_headers();
+            $id = $this->input->post('id');
+            if (!$this->isValidAuthorization($headers)) {
+                return $this->sendJson(['response' => 'Token é necessário.'], 404);
             }
-        } else {
-            $this->sendJson(['Token é necessário. '], 404);
+            $existingClient = $this->getClientById($id);
+            if (!$existingClient) {
+                return $this->sendJson(['response' => 'Cliente não encontrado.'], 404);
+            }
+            $input = $this->input->post();
+            $this->updateClientAndAddress($id, $input);
+            return $this->sendJson(['response' => 'Cliente atualizado com sucesso.'], 200);
+        }catch(Exception $e){
+            return $this->sendJson(['response' =>
+                'Ocorreu um erro ao atualizar o cliente.'], 500);
         }
     }
 
-
-    public function deleteClient($id)
+    public function deleteClient()
     {
-        $headers = $this->input->request_headers();
-        if (isset($headers['Authorization'])) {
-            $clientToken = $this->authorization_token->validateToken($headers['Authorization']);
-            if ($clientToken['status'])
-            {
-                $response = $this->ClientModel->delete($id);
-                $response>0?$this->sendJson(['Cliente deletado com sucesso!'],
-                    REST_Controller::HTTP_OK):$this->sendJson(['Not deleted'],
-                    REST_Controller::HTTP_OK);
+        try {
+            $headers = $this->input->request_headers();
+            $id = $this->input->post('id');
+            if (!$this->isValidAuthorization($headers)) {
+                return $this->sendJson(['response' => 'Token é necessário.'], 404);
             }
-            else {
-                $this->sendJson($clientToken);
+            if (!$this->isValidClientId($id)) {
+                return $this->sendJson(['response' => validation_errors()], 400);
             }
-        }
-        else {
-            $this->sendJson(['Falha de autenticação.'], REST_Controller::HTTP_OK);
+            $existingClient = $this->getClientById($id);
+            if (!$existingClient) {
+                return $this->sendJson(['response' => 'Cliente não encontrado.'], 404);
+            }
+            $this->deleteClientAndAddress($id);
+            return $this->sendJson(['response' => 'Cliente excluído com sucesso.'], 200);
+        }catch (Exception $e){
+            return $this->sendJson(['response' =>
+                'Ocorreu um erro ao excluir o cliente.'], 500);
         }
     }
 
     private function sendJson($data)
     {
         $this->output->set_header('Content-Type: application/json; charset=utf-8')->set_output(json_encode($data));
+    }
+
+    private function isValidFormData()
+    {
+        $rules = [
+            ['field' => 'name', 'label' => 'Name', 'rules' => 'required'],
+            ['field' => 'email', 'label' => 'Email', 'rules' => 'required|valid_email'],
+            ['field' => 'phone', 'label' => 'Phone', 'rules' => 'required'],
+        ];
+
+        $this->form_validation->set_rules($rules);
+        return $this->form_validation->run();
+    }
+
+    private function createAddress($input, $clientID)
+    {
+        $addressData = [
+            'cep' => $input['cep'],
+            'street' => $input['street'],
+            'complement' => $input['complement'],
+            'neighborhood' => $input['neighborhood'],
+            'city' => $input['city'],
+            'state' => $input['state'],
+            'id_client' => $clientID,
+        ];
+        $this->AddressModel->insert($addressData);
+    }
+
+    private function isValidClientId()
+    {
+        $this->form_validation->set_rules('id', 'Id', 'required');
+        $this->form_validation->set_message('required', 'O campo {field} é obrigatório.');
+        return $this->form_validation->run();
+    }
+
+    private function getClientData($id = null)
+    {
+        return (!empty($id)) ? $this->ClientModel->show($id) : $this->ClientModel->show();
+    }
+
+    private function isValidAuthorization($headers)
+    {
+        return isset($headers['Authorization']) && $this->authorization_token->validateToken($headers['Authorization'])['status'];
+    }
+
+    private function getClientById($id)
+    {
+        return $this->ClientModel->getClientById($id);
+    }
+
+    private function updateClientAndAddress($id, $input)
+    {
+        $this->ClientModel->update($id, $input);
+        $addressData = [
+            'cep' => $input['cep'],
+            'street' => $input['street'],
+            'complement' => $input['complement'],
+            'neighborhood' => $input['neighborhood'],
+            'city' => $input['city'],
+            'state' => $input['state'],
+        ];
+        $this->AddressModel->update($id, $addressData);
+    }
+
+    private function deleteClientAndAddress($id)
+    {
+        $this->ClientModel->delete($id);
+        $this->AddressModel->delete($id);
     }
 
 

@@ -42,11 +42,11 @@ class Auth extends CI_Controller
                     $final['note'] = 'Você está logado';
                     $this->sendJson(['response' => $final], 200);
                 } else {
-                    $this->sendJson(['message' => 'Login ou senha incorretos. '], 404);
+                    $this->sendJson(['response' => 'Login ou senha incorretos. '], 404);
                 }
             }
         } else {
-            return $this->sendJson(array("message" => "POST Method", "status" => false));
+            return $this->sendJson(array("response" => "POST Method", "status" => false));
         }
     }
 
@@ -55,7 +55,7 @@ class Auth extends CI_Controller
             $this->form_validation->set_rules('email', 'Email', 'trim|required');
             $this->form_validation->set_rules('password', 'Password', 'trim|required');
             if ($this->form_validation->run() === false) {
-                $this->sendJson(['Regras de validação violadas'], 500);
+                $this->sendJson(['response' => 'Regras de validação violadas'], 500);
             } else {
 
                 $username = $this->input->post('username');

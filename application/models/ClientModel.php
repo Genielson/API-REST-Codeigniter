@@ -13,7 +13,7 @@ class ClientModel extends CI_Model {
         return $this->db->insert_id(); 
     }
 
-    public function getClientById($id) {
+    public function getClientById(int $id) {
         $query = $this->db->get_where('clients', array('id' => $id));
         return $query->row_array();
     }
@@ -29,11 +29,11 @@ class ClientModel extends CI_Model {
     }
 
 
-    public function update(array $data, int $id): int {
+    public function update(int $id, array $data): int {
         $this->db->update('clients', $data, ['id' => $id]);
         return $this->db->affected_rows();
     }
-    
+
     public function delete(int $id): int {
         $this->db->delete('clients', ['id' => $id]);
         return $this->db->affected_rows();
