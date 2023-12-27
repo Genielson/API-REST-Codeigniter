@@ -1,13 +1,5 @@
 <?php defined('BASEPATH') OR exit('No direct script access allowed');
 
-/**
- * Authorization_Token
- * ----------------------------------------------------------
- * API Token Generate/Validation
- * 
- * @author: Jeevan Lal
- * @version: 0.0.1
- */
 
 require_once APPPATH . 'third_party/php-jwt/JWT.php';
 require_once APPPATH . 'third_party/php-jwt/BeforeValidException.php';
@@ -16,7 +8,7 @@ require_once APPPATH . 'third_party/php-jwt/SignatureInvalidException.php';
 
 use \Firebase\JWT\JWT;
 
-class Authorization_Token 
+class Authorization_Token
 {
     /**
      * Token Key
@@ -36,20 +28,20 @@ class Authorization_Token
     /**
      * Token Expire Time
      */
-    protected $token_expire_time; 
+    protected $token_expire_time;
 
 
     public function __construct()
-	{
+    {
         $this->CI =& get_instance();
 
-        /** 
+        /**
          * jwt config file load
          */
         $this->CI->load->config('jwt');
 
         /**
-         * Load Config Items Values 
+         * Load Config Items Values
          */
         $this->token_key        = $this->CI->config->item('jwt_key');
         $this->token_algorithm  = $this->CI->config->item('jwt_algorithm');
@@ -89,7 +81,7 @@ class Authorization_Token
          * Request All Headers
          */
         $headers = $this->CI->input->request_headers();
-        
+
         /**
          * Authorization Header Exists
          */
@@ -112,13 +104,13 @@ class Authorization_Token
                 {
                     // Check Token API Time [API_TIME]
                     if (empty($token_decode->API_TIME OR !is_numeric($token_decode->API_TIME))) {
-                        
+
                         return ['status' => FALSE, 'message' => 'Token Time Not Define!'];
                     }
                     else
                     {
                         /**
-                         * Check Token Time Valid 
+                         * Check Token Time Valid
                          */
                         $time_difference = strtotime('now') - $token_decode->API_TIME;
                         if( $time_difference >= $this->token_expire_time )
@@ -133,7 +125,7 @@ class Authorization_Token
                             return ['status' => TRUE, 'data' => $token_decode];
                         }
                     }
-                    
+
                 }else{
                     return ['status' => FALSE, 'message' => 'Forbidden'];
                 }

@@ -17,16 +17,24 @@ class Auth extends CI_Controller
     public function login()
     {
         if ($this->input->method() === 'post') {
-            $email = $this->input->post('email');
-            $password = $this->input->post('password');
-
-            if ($email == "test@mail.com" and $password == "test") {
-                $token_data['userEmail'] = $email;
-                $token_data['userRole'] = "Admin";
-                $tokenData = $this->authorization_token->generateToken($token_data);
-                return $this->sendJson(array("token" => $tokenData, "status" => true, "response" => "Login Success!"));
+            $this->form_validation->set_rules('username', 'Username', 'required|alpha_numeric');
+            $this->form_validation->set_rules('password', 'Password', 'required');
+            $this->form_validation->set_rules('email', 'Email', 'required');
+            if ($this->form_validation->run() == false) {
+                return $this->sendJson(array("message" => " Por favor, envie todos os parâmetros necessários"));
             } else {
-                return $this->sendJson(array("token" => null, "status" => false, "response" => "Login Failed!"));
+                $email = $this->input->post('email');
+                $password = $this->input->post('password');
+
+                if ($email == "test@mail.com" and $password == "test") {
+                    $token_data['userEmail'] = $email;
+                    $token_data['userRole'] = "Admin";
+                    $tokenData = $this->authorization_token->generateToken($token_data);
+                    return $this->sendJson(array("token" => $tokenData, "status" => true, "response" => "Login Success!"));
+                } else {
+                    return $this->sendJson(array("token" => null, "status" => false, "response" => "Login Failed!"));
+                }
+
             }
         } else {
             return $this->sendJson(array("message" => "POST Method", "status" => false));
