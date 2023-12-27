@@ -17,12 +17,51 @@ class Auth extends CI_Controller
     public function login()
     {
         if ($this->input->method() === 'post') {
-            $this->form_validation->set_rules('username', 'Username', 'required|alpha_numeric');
-            $this->form_validation->set_rules('password', 'Password', 'required');
-            $this->form_validation->set_rules('email', 'Email', 'required');
+            $this->form_validation->set_rules('password', 'Senha', 'required');
+            $this->form_validation->set_rules('username', 'Usuario', 'required');
             if ($this->form_validation->run() == false) {
                 return $this->sendJson(array("message" => " Por favor, envie todos os parâmetros necessários"));
             } else {
+                $username    = $this->input->post('username');
+                $password = $this->input->post('password');
+                if ($this->UserModel->resolveUserLogin($username, $password)) {
+
+                    $userId = $this->UserModel->getUserIdFromUsername($username);
+                    $user    = $this->UserModel->getUser($userId);
+                    $_SESSION['user_id']      = (int)$user->id;
+                    $_SESSION['username']     = (string)$user->username;
+                    $_SESSION['logged_in']    = (bool)true;
+                    $_SESSION['is_confirmed'] = (bool)$user->is_confirmed;
+                    $_SESSION['is_admin']     = (bool)$user->is_admin;
+
+                    $tokenData['uid'] = $userId;
+                    $tokenData['username'] = $user->username;
+                    $tokenData = $this->authorization_token->generateToken($tokenData);
+                    $final = array();
+                    $final['access_token'] = $tokenData;
+                    $final['status'] = true;
+                    $final['message'] = 'Login realizado com sucesso!';
+                    $final['note'] = 'Você está logado';
+                    $this->sendJson(['response' => $final], 200);
+                } else {
+                    $this->sendJson(['message' => 'Login ou senha incorretos. '], 404);
+                }
+            }
+        } else {
+            return $this->sendJson(array("message" => "POST Method", "status" => false));
+        }
+    }
+
+    public function register(){
+        $headers = $this->input->request_headers();
+        if (isset($headers['Authorization'])) {
+            $this->form_validation->set_rules('username', 'Username', 'trim|required|alpha_numeric|min_length[4]|is_unique[users.username]', array('is_unique' => 'Esse nome já existe, por favor, escolha outro! '));
+            $this->form_validation->set_rules('email', 'Email', 'trim|required|valid_email|is_unique[users.email]');
+            $this->form_validation->set_rules('password', 'Password', 'trim|required|min_length[6]');
+            if ($this->form_validation->run() === false) {
+                $this->sendJson(['Regras de validação violadas'], 500);
+            } else {
+
                 $username = $this->input->post('username');
                 $email    = $this->input->post('email');
                 $password = $this->input->post('password');
@@ -39,9 +78,10 @@ class Auth extends CI_Controller
                 } else {
                     return $this->sendJson(array("response" => "Houve um erro ao criar a conta. Por favor, tente novamente"), 500);
                 }
+
             }
-        } else {
-            return $this->sendJson(array("message" => "POST Method", "status" => false));
+        }else{
+            return $this->sendJson(array("status" => true, "response" => "Token é necessário "));
         }
     }
 
