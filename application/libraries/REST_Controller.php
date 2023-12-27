@@ -684,11 +684,20 @@ abstract class REST_Controller extends CI_Controller {
         $object_called = preg_replace('/^(.*)\.(?:'.implode('|', array_keys($this->_supported_formats)).')$/', '$1', $object_called);
 
         $controller_method = $object_called.'_'.$this->request->method;
+
         // Does this method exist? If not, try executing an index method
+
+        echo var_dump($this);exit;
+
         if (!method_exists($this, $controller_method)) {
+
             $controller_method = "index_" . $this->request->method;
             array_unshift($arguments, $object_called);
         }
+
+
+
+
 
         // Do we want to log this method (if allowed by config)?
         $log_method = ! (isset($this->methods[$controller_method]['log']) && $this->methods[$controller_method]['log'] === FALSE);
@@ -729,14 +738,22 @@ abstract class REST_Controller extends CI_Controller {
             ], self::HTTP_UNAUTHORIZED);
         }
 
+
         // Sure it exists, but can they do anything with it?
+
+
         if (! method_exists($this, $controller_method))
         {
+
             $this->response([
                 $this->config->item('rest_status_field_name') => FALSE,
                 $this->config->item('rest_message_field_name') => $this->lang->line('text_rest_unknown_method')
             ], self::HTTP_METHOD_NOT_ALLOWED);
         }
+
+
+
+
 
         // Doing key related stuff? Can only do it if they have a key right?
         if ($this->config->item('rest_enable_keys') && empty($this->rest->key) === FALSE)

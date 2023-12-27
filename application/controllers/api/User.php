@@ -14,7 +14,7 @@ class User extends REST_Controller {
 		$this->load->model('UserModel');
 	}
 
-	public function registerUser() : void {
+	public function register() : void {
 		$this->form_validation->set_rules('username', 'Username', 'trim|required|alpha_numeric|min_length[4]|is_unique[users.username]', array('is_unique' => 'Esse nome já existe, por favor, escolha outro! '));
 		$this->form_validation->set_rules('email', 'Email', 'trim|required|valid_email|is_unique[users.email]');
 		$this->form_validation->set_rules('password', 'Password', 'trim|required|min_length[6]');
@@ -47,7 +47,7 @@ class User extends REST_Controller {
 	}
 
 
-	public function loginUser() : void {
+	public function login_post() : void {
 		$this->form_validation->set_rules('username', 'Username', 'required|alpha_numeric');
 		$this->form_validation->set_rules('password', 'Password', 'required');
 
@@ -87,7 +87,7 @@ class User extends REST_Controller {
 	}
 
 
-	public function logoutUser() : void {
+	public function logout_post() : void {
 		if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true) {
 
 			foreach ($_SESSION as $key => $value) {
