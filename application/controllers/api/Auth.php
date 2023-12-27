@@ -32,8 +32,6 @@ class Auth extends CI_Controller
                     $_SESSION['username']     = (string)$user->username;
                     $_SESSION['logged_in']    = (bool)true;
                     $_SESSION['is_confirmed'] = (bool)$user->is_confirmed;
-                    $_SESSION['is_admin']     = (bool)$user->is_admin;
-
                     $tokenData['uid'] = $userId;
                     $tokenData['username'] = $user->username;
                     $tokenData = $this->authorization_token->generateToken($tokenData);

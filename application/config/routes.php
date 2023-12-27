@@ -53,3 +53,9 @@ $route['default_controller'] = '';
 $route['404_override'] = '';
 $route['translate_uri_dashes'] = FALSE;
 
+$route['api/user/login'] = 'api/Auth/login';
+$route['api/user/register'] = 'api/Auth/register';
+$route['api/user/logout'] = 'api/Auth/logout';
+
+$route['api/client/(:num)'] = "api/Client/getClient/$1";
+$route['api/client/create'] = "api/Client/createClient";
