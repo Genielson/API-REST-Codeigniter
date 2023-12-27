@@ -1,7 +1,6 @@
 <?php
 
-namespace Restserver\controllers\api;
-
+defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Auth extends CI_Controller
 {
@@ -12,6 +11,7 @@ class Auth extends CI_Controller
         header("Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE");
         header("Access-Control-Allow-Headers: Content-Type, Content-Length, Accept-Encoding,Authorization");
         parent::__construct();
+        $this->load->model('UserModel');
     }
 
     public function login()
@@ -23,18 +23,22 @@ class Auth extends CI_Controller
             if ($this->form_validation->run() == false) {
                 return $this->sendJson(array("message" => " Por favor, envie todos os parâmetros necessários"));
             } else {
-                $email = $this->input->post('email');
+                $username = $this->input->post('username');
+                $email    = $this->input->post('email');
                 $password = $this->input->post('password');
 
-                if ($email == "test@mail.com" and $password == "test") {
-                    $token_data['userEmail'] = $email;
-                    $token_data['userRole'] = "Admin";
-                    $tokenData = $this->authorization_token->generateToken($token_data);
-                    return $this->sendJson(array("token" => $tokenData, "status" => true, "response" => "Login Success!"));
+                if ($res = $this->UserModel->createUser($username, $email, $password)) {
+                    $tokenData['uid'] = $res;
+                    $tokenData['username'] = $username;
+                    $tokenData = $this->authorization_token->validateToken($headers['Authorization']);                $final = array();
+                    $final['access_token'] = $tokenData;
+                    $final['status'] = true;
+                    $final['uid'] = $res;
+                    $final['message'] = 'Obrigado por registrar sua nova conta!';
+                    return $this->sendJson(array("response" => $final), 200);
                 } else {
-                    return $this->sendJson(array("token" => null, "status" => false, "response" => "Login Failed!"));
+                    return $this->sendJson(array("response" => "Houve um erro ao criar a conta. Por favor, tente novamente"), 500);
                 }
-
             }
         } else {
             return $this->sendJson(array("message" => "POST Method", "status" => false));
