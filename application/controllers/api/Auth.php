@@ -53,11 +53,9 @@ class Auth extends CI_Controller
     }
 
     public function register(){
-        $headers = $this->input->request_headers();
-        if (isset($headers['Authorization'])) {
-            $this->form_validation->set_rules('username', 'Username', 'trim|required|alpha_numeric|min_length[4]|is_unique[users.username]', array('is_unique' => 'Esse nome já existe, por favor, escolha outro! '));
-            $this->form_validation->set_rules('email', 'Email', 'trim|required|valid_email|is_unique[users.email]');
-            $this->form_validation->set_rules('password', 'Password', 'trim|required|min_length[6]');
+            $this->form_validation->set_rules('username', 'Username', 'trim|required');
+            $this->form_validation->set_rules('email', 'Email', 'trim|required');
+            $this->form_validation->set_rules('password', 'Password', 'trim|required');
             if ($this->form_validation->run() === false) {
                 $this->sendJson(['Regras de validação violadas'], 500);
             } else {
@@ -69,7 +67,8 @@ class Auth extends CI_Controller
                 if ($res = $this->UserModel->createUser($username, $email, $password)) {
                     $tokenData['uid'] = $res;
                     $tokenData['username'] = $username;
-                    $tokenData = $this->authorization_token->validateToken($headers['Authorization']);                $final = array();
+                    $tokenData = $this->authorization_token->generateToken($tokenData);
+                    $final = array();
                     $final['access_token'] = $tokenData;
                     $final['status'] = true;
                     $final['uid'] = $res;
@@ -80,8 +79,16 @@ class Auth extends CI_Controller
                 }
 
             }
-        }else{
-            return $this->sendJson(array("status" => true, "response" => "Token é necessário "));
+    }
+
+    public function logout(){
+        if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true) {
+            foreach ($_SESSION as $key => $value) {
+                unset($_SESSION[$key]);
+            }
+            $this->sendJson(['response' => 'Logout com sucesso!'], 200);
+        } else {
+            $this->sendJson(['response' => 'Houve um problema. Por favor, tente novamente'], 500);
         }
     }
 
