@@ -58,4 +58,6 @@ $route['api/user/register'] = 'api/Auth/register';
 $route['api/user/logout'] = 'api/Auth/logout';
 
 $route['api/client'] = "api/Client/getClient";
-$route['api/client/create'] = "api/Client/createClient";
+$route['api/client/register'] = "api/Client/createClient";
+$route['api/client/update'] = "api/Client/updateClient";
+$route['api/client/delete'] = "api/Client/deleteClient";

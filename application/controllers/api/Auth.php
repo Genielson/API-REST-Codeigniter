@@ -16,82 +16,144 @@ class Auth extends CI_Controller
 
     public function login()
     {
-        if ($this->input->method() === 'post') {
-            $this->form_validation->set_rules('password', 'Senha', 'required');
-            $this->form_validation->set_rules('username', 'Usuario', 'required');
-            if ($this->form_validation->run() == false) {
-                return $this->sendJson(array("message" => " Por favor, envie todos os parâmetros necessários"));
-            } else {
-                $username    = $this->input->post('username');
-                $password = $this->input->post('password');
-                if ($this->UserModel->resolveUserLogin($username, $password)) {
-
-                    $userId = $this->UserModel->getUserIdFromUsername($username);
-                    $user    = $this->UserModel->getUser($userId);
-                    $_SESSION['user_id']      = (int)$user->id;
-                    $_SESSION['username']     = (string)$user->username;
-                    $_SESSION['logged_in']    = (bool)true;
-                    $_SESSION['is_confirmed'] = (bool)$user->is_confirmed;
-                    $tokenData['uid'] = $userId;
-                    $tokenData['username'] = $user->username;
-                    $tokenData = $this->authorization_token->generateToken($tokenData);
-                    $final = array();
-                    $final['access_token'] = $tokenData;
-                    $final['status'] = true;
-                    $final['message'] = 'Login realizado com sucesso!';
-                    $final['note'] = 'Você está logado';
-                    $this->sendJson(['response' => $final], 200);
-                } else {
-                    $this->sendJson(['response' => 'Login ou senha incorretos. '], 404);
+        try {
+            if ($this->input->method() === 'post') {
+                $validationResult = $this->validateLoginInput();
+                if (!$validationResult['status']) {
+                    return $this->sendJson(['response' => $validationResult['message']], 400);
                 }
+                $username = $this->input->post('username');
+                $password = $this->input->post('password');
+                if ($this->attemptLogin($username, $password)) {
+                    $this->handleSuccessfulLogin($username);
+                } else {
+                    return $this->sendJson(['response' => 'Login ou senha incorretos.'], 404);
+                }
+            } else {
+                return $this->sendJson(['response' => 'Método inválido. Use POST.'], 405);
             }
-        } else {
-            return $this->sendJson(array("response" => "POST Method", "status" => false));
+        }catch(Exception $e){
+            return $this->sendJson(['response' =>
+                'Ocorreu um erro ao realizar login'], 500);
         }
     }
 
-    public function register(){
-            $this->form_validation->set_rules('username', 'Username', 'trim|required');
-            $this->form_validation->set_rules('email', 'Email', 'trim|required');
-            $this->form_validation->set_rules('password', 'Password', 'trim|required');
-            if ($this->form_validation->run() === false) {
-                $this->sendJson(['response' => 'Regras de validação violadas'], 500);
-            } else {
-
-                $username = $this->input->post('username');
-                $email    = $this->input->post('email');
-                $password = $this->input->post('password');
-
-                if ($res = $this->UserModel->createUser($username, $email, $password)) {
-                    $tokenData['uid'] = $res;
-                    $tokenData['username'] = $username;
-                    $tokenData = $this->authorization_token->generateToken($tokenData);
-                    $final = array();
-                    $final['access_token'] = $tokenData;
-                    $final['status'] = true;
-                    $final['uid'] = $res;
-                    $final['message'] = 'Obrigado por registrar sua nova conta!';
-                    return $this->sendJson(array("response" => $final), 200);
-                } else {
-                    return $this->sendJson(array("response" => "Houve um erro ao criar a conta. Por favor, tente novamente"), 500);
-                }
-
+    public function register()
+    {
+        try {
+            $inputData = $this->input->post();
+            if (!$this->validateRegistrationInput($inputData)) {
+                return $this->sendJson(['response' => validation_errors()], 400);
             }
+            $userId = $this->createUserAndReturnId($inputData);
+            if ($userId) {
+                $tokenData = $this->generateUserToken($userId, $inputData['username']);
+                $response['access_token'] = $tokenData;
+                $response['status'] = true;
+                $response['uid'] = $userId;
+                $response['message'] = 'Obrigado por registrar sua nova conta!';
+                return $this->sendJson(['response' => $response], 200);
+            } else {
+                return $this->sendJson(['response' => 'Houve um erro ao criar a conta. Por favor, tente novamente'], 500);
+            }
+        }catch (Exception $e){
+            return $this->sendJson(['response' =>
+                'Ocorreu um erro ao registrar um usuario.'], 500);
+        }
     }
+
+
 
     public function logout(){
-        if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true) {
-            foreach ($_SESSION as $key => $value) {
-                unset($_SESSION[$key]);
+            if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true) {
+                foreach ($_SESSION as $key => $value) {
+                    unset($_SESSION[$key]);
+                }
+                return $this->sendJson(['response' => 'Logout com sucesso!'], 200);
+            } else {
+               return  $this->sendJson(['response' => 'Houve um problema. Por favor, tente novamente'], 500);
             }
-            $this->sendJson(['response' => 'Logout com sucesso!'], 200);
-        } else {
-            $this->sendJson(['response' => 'Houve um problema. Por favor, tente novamente'], 500);
-        }
     }
 
     private function sendJson($data)
     {
-        $this->output->set_header('Content-Type: application/json; charset=utf-8')->set_output(json_encode($data));
+      return  $this->output->set_header('Content-Type: application/json; charset=utf-8')->set_output(json_encode($data));
+    }
+
+
+    private function validateLoginInput()
+    {
+        $this->form_validation->set_rules('password', 'Senha', 'required');
+        $this->form_validation->set_rules('username', 'Usuário', 'required');
+
+        if ($this->form_validation->run() == false) {
+            return ['status' => false, 'message' => 'Por favor, envie todos os parâmetros necessários'];
+        }
+
+        return ['status' => true];
+    }
+
+    private function attemptLogin($username, $password)
+    {
+        return $this->UserModel->resolveUserLogin($username, $password);
+    }
+
+    private function handleSuccessfulLogin($username)
+    {
+        $userId = $this->UserModel->getUserIdFromUsername($username);
+        $user = $this->UserModel->getUser($userId);
+
+        $this->setUserSession($user);
+
+        $tokenData['uid'] = $userId;
+        $tokenData['username'] = $user->username;
+        $tokenData = $this->authorization_token->generateToken($tokenData);
+
+        $response['access_token'] = $tokenData;
+        $response['status'] = true;
+        $response['message'] = 'Login realizado com sucesso!';
+        $response['note'] = 'Você está logado';
+
+        return $this->sendJson(['response' => $response], 200);
+    }
+
+    private function setUserSession($user)
+    {
+        $_SESSION['user_id'] = (int) $user->id;
+        $_SESSION['username'] = (string) $user->username;
+        $_SESSION['logged_in'] = (bool) true;
+        $_SESSION['is_confirmed'] = (bool) $user->is_confirmed;
+    }
+
+
+    private function validateRegistrationInput(array $inputData)
+    {
+        $this->form_validation->set_rules('username', 'Username', 'trim|required', ['required' => 'O campo {field} é obrigatório.']);
+        $this->form_validation->set_rules('email', 'Email', 'trim|required|valid_email', [
+            'required' => 'O campo {field} é obrigatório.',
+            'valid_email' => 'Por favor, forneça um endereço de e-mail válido.'
+        ]);
+        $this->form_validation->set_rules('password', 'Password', 'trim|required|min_length[6]', [
+            'required' => 'O campo {field} é obrigatório.',
+            'min_length' => 'A senha deve ter pelo menos {param} caracteres.'
+        ]);
+        return $this->form_validation->run();
+    }
+
+    private function createUserAndReturnId(array $inputData)
+    {
+        $username = $inputData['username'];
+        $email = $inputData['email'];
+        $password = $inputData['password'];
+
+        return $this->UserModel->createUser($username, $email, $password);
+    }
+
+    private function generateUserToken($userId, $username)
+    {
+        $tokenData['uid'] = $userId;
+        $tokenData['username'] = $username;
+
+        return $this->authorization_token->generateToken($tokenData);
     }
 }
