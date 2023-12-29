@@ -8,12 +8,9 @@ use application\models\UserModel;
 
 class AuthRepository implements AuthRepositoryInterface
 {
-    private $db;
-
     public function __construct() {
         $this->CI =& get_instance();
         $this->CI->load->database();
-        $this->db = $this->CI->db;
         $this->load->model('UserModel');
     }
 

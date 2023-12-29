@@ -6,7 +6,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 class AuthController extends CI_Controller
 {
 
-    private $authRepository;
+    private AuthRepository $authRepository;
 
     public function __construct($config = "rest")
     {

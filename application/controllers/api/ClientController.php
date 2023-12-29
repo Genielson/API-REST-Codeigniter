@@ -1,10 +1,14 @@
 <?php
 
+use application\repositories\AddressRepository;
+use application\repositories\ClientRepository;
 defined('BASEPATH') OR exit('No direct script access allowed');
 
 class ClientController extends CI_Controller {
 
     public $data;
+    public ClientRepository $clientRepository;
+    public AddressRepository $addressRepository;
 
     public function __construct($config="rest") {
         header("Access-Control-Allow-Origin: *");
@@ -14,6 +18,7 @@ class ClientController extends CI_Controller {
         $this->load->library('Authorization_Token');
         $this->load->model('ClientModel');
         $this->load->model('AddressModel');
+        $this->clientRepository = new ClientRepository();
     }
 
     public function getClient()
@@ -32,7 +37,7 @@ class ClientController extends CI_Controller {
                 if (!$decodedToken['status']) {
                     return $this->sendJson(['response' => $decodedToken], 200);
                 }
-                $this->data = $this->getClientData($id);
+                $this->data = $this->clientRepository->getClientData($id);
                 return $this->sendJson(['response' => $this->data], 200);
             }else{
                 return $this->sendJson(['response' => 'Utilize o metodo HTTP correto.'], 500);
@@ -63,9 +68,9 @@ class ClientController extends CI_Controller {
                 $dataClient['name'] = $this->input->post('name') ?? null;
                 $dataClient['email'] = $this->input->post('email') ?? null;
                 $dataClient['phone'] = $this->input->post('phone') ?? null;
-                $clientID = $this->ClientModel->insert($dataClient);
+                $clientID = $this->clientRepository->createClient($dataClient);
                 if ($clientID) {
-                    $this->createAddress($input, $clientID);
+                    $this->addressRepository->createAddress($input, $clientID);
                     return $this->sendJson(['response' => 'Cliente registrado com sucesso.'], 200);
                 }
                 return $this->sendJson(['response' => 'Falha ao registrar o cliente.'], 500);
@@ -87,7 +92,7 @@ class ClientController extends CI_Controller {
                 if (!$this->isValidAuthorization($headers)) {
                     return $this->sendJson(['response' => 'Token é necessário.'], 404);
                 }
-                $existingClient = $this->getClientById($id);
+                $existingClient = $this->clientRepository->getClientById($id);
                 if (!$existingClient) {
                     return $this->sendJson(['response' => 'Cliente não encontrado.'], 404);
                 }
@@ -115,12 +120,11 @@ class ClientController extends CI_Controller {
                 if (!$this->isValidClientId($id)) {
                     return $this->sendJson(['response' => validation_errors()], 400);
                 }
-                $existingClient = $this->getClientById($id);
+                $existingClient = $this->clientRepository->getClientById($id);
                 if (!$existingClient) {
                     return $this->sendJson(['response' => 'Cliente não encontrado.'], 404);
                 }
-
-                $this->deleteClientAndAddress($id);
+                $this->deleteClientAndAddress($existingClient);
                 return $this->sendJson(['response' => 'Cliente excluído com sucesso.'], 200);
             }else{
                 return $this->sendJson(['response' => 'Utilize o metodo HTTP correto.'], 500);
@@ -131,7 +135,7 @@ class ClientController extends CI_Controller {
         }
     }
 
-    private function sendJson($data)
+    private function sendJson(array $data)
     {
         return $this->output->set_header('Content-Type: application/json; charset=utf-8')->set_output(json_encode($data));
     }
@@ -150,20 +154,6 @@ class ClientController extends CI_Controller {
         return $this->form_validation->run();
     }
 
-    private function createAddress(array $input, int $clientID)
-    {
-        $addressData = [
-            'cep' => $input['cep'] ?? null,
-            'street' => $input['street'] ?? null,
-            'complement' => $input['complement'] ?? null,
-            'neighborhood' => $input['neighborhood'] ?? null,
-            'city' => $input['city'] ?? null,
-            'state' => $input['state'] ?? null,
-            'id_client' => $clientID,
-        ];
-        $this->AddressModel->insert($addressData);
-    }
-
     private function isValidClientId()
     {
         $this->form_validation->set_rules('id', 'Id', 'required');
@@ -171,29 +161,20 @@ class ClientController extends CI_Controller {
         return $this->form_validation->run();
     }
 
-    private function getClientData($id = null)
-    {
-        return (!empty($id)) ? $this->ClientModel->show($id) : $this->ClientModel->show();
-    }
 
-    private function isValidAuthorization($headers)
+    private function isValidAuthorization(array $headers)
     {
         return isset($headers['Authorization']) && $this->authorization_token->validateToken($headers['Authorization'])['status'];
     }
 
-    private function getClientById($id)
-    {
-        return $this->ClientModel->getClientById($id);
-    }
-
-    private function updateClientAndAddress($id, $input)
+    private function updateClientAndAddress(int $id, array $input)
     {
         $clientData = [
             'name' => $input['name'] ?? null,
             'email' => $input['email'] ?? null,
             'phone' => $input['phone'] ?? null,
         ];
-        $this->ClientModel->update($id, $clientData);
+        $this->clientRepository->updateClient($id,$clientData);
         $addressData = [
             'cep' => $input['cep'] ?? null,
             'street' => $input['street'] ?? null,
@@ -202,13 +183,13 @@ class ClientController extends CI_Controller {
             'city' => $input['city'] ?? null,
             'state' => $input['state'] ?? null,
         ];
-        $this->AddressModel->update($id, $addressData);
+        $this->addressRepository->updateAddress($id,$addressData);
     }
 
-    private function deleteClientAndAddress($id)
+    private function deleteClientAndAddress(array $client)
     {
-        $this->ClientModel->delete($id);
-        $this->AddressModel->delete($id);
+        $this->clientRepository->deleteClient($client['id']);
+        $this->addressRepository->deleteAddress($client['id_address']);
     }
 
 
