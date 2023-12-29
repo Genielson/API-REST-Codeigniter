@@ -1,7 +1,7 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 
-class User extends CI_Controller {
+class UserController extends CI_Controller {
 
     public function __construct($config = "rest") {
         header("Access-Control-Allow-Origin: *");

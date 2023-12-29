@@ -196,7 +196,7 @@ class CI_Xmlrpc {
 	public $xmlrpc_backslash	= '';
 
 	/**
-	 * XML-RPC Client object
+	 * XML-RPC ClientController object
 	 *
 	 * @var	object
 	 */
@@ -555,7 +555,7 @@ class CI_Xmlrpc {
 } // END XML_RPC Class
 
 /**
- * XML-RPC Client class
+ * XML-RPC ClientController class
  *
  * @category	XML-RPC
  * @author		EllisLab Dev Team
@@ -731,7 +731,7 @@ class XML_RPC_Client extends CI_Xmlrpc
 			.'Host: '.$this->server.$r
 			.'Content-Type: text/xml'.$r
 			.(isset($this->username, $this->password) ? 'Authorization: Basic '.base64_encode($this->username.':'.$this->password).$r : '')
-			.'User-Agent: '.$this->xmlrpcName.$r
+			.'UserController-Agent: '.$this->xmlrpcName.$r
 			.'Content-Length: '.strlen($msg->payload).$r.$r
 			.$msg->payload;
 

@@ -2,7 +2,7 @@
 
 defined('BASEPATH') OR exit('No direct script access allowed');
 
-class Auth extends CI_Controller
+class AuthController extends CI_Controller
 {
 
     public function __construct($config = "rest")
@@ -22,10 +22,10 @@ class Auth extends CI_Controller
                 if (!$validationResult['status']) {
                     return $this->sendJson(['response' => $validationResult['message']], 400);
                 }
-                $username = $this->input->post('username');
+                $email = $this->input->post('username');
                 $password = $this->input->post('password');
-                if ($this->attemptLogin($username, $password)) {
-                    $this->handleSuccessfulLogin($username);
+                if ($this->attemptLogin($email, $password)) {
+                    $this->handleSuccessfulLogin($email);
                 } else {
                     return $this->sendJson(['response' => 'Login ou senha incorretos.'], 404);
                 }
@@ -62,8 +62,6 @@ class Auth extends CI_Controller
         }
     }
 
-
-
     public function logout(){
             if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true) {
                 foreach ($_SESSION as $key => $value) {
@@ -75,7 +73,7 @@ class Auth extends CI_Controller
             }
     }
 
-    private function sendJson($data)
+    private function sendJson(array $data)
     {
       return  $this->output->set_header('Content-Type: application/json; charset=utf-8')->set_output(json_encode($data));
     }
@@ -93,27 +91,23 @@ class Auth extends CI_Controller
         return ['status' => true];
     }
 
-    private function attemptLogin($username, $password)
+    private function attemptLogin(string $email, string $password)
     {
-        return $this->UserModel->resolveUserLogin($username, $password);
+        return $this->UserModel->resolveUserLogin($email, $password);
     }
 
-    private function handleSuccessfulLogin($username)
+    private function handleSuccessfulLogin(string $email)
     {
-        $userId = $this->UserModel->getUserIdFromUsername($username);
+        $userId = $this->UserModel->getUserIdFromEmail($email);
         $user = $this->UserModel->getUser($userId);
-
         $this->setUserSession($user);
-
         $tokenData['uid'] = $userId;
         $tokenData['username'] = $user->username;
         $tokenData = $this->authorization_token->generateToken($tokenData);
-
         $response['access_token'] = $tokenData;
         $response['status'] = true;
         $response['message'] = 'Login realizado com sucesso!';
         $response['note'] = 'Você está logado';
-
         return $this->sendJson(['response' => $response], 200);
     }
 
@@ -145,15 +139,13 @@ class Auth extends CI_Controller
         $username = $inputData['username'];
         $email = $inputData['email'];
         $password = $inputData['password'];
-
         return $this->UserModel->createUser($username, $email, $password);
     }
 
-    private function generateUserToken($userId, $username)
+    private function generateUserToken(int $userId, string $username)
     {
         $tokenData['uid'] = $userId;
         $tokenData['username'] = $username;
-
         return $this->authorization_token->generateToken($tokenData);
     }
 }

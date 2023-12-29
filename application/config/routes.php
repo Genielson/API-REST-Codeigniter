@@ -53,11 +53,11 @@ $route['default_controller'] = '';
 $route['404_override'] = '';
 $route['translate_uri_dashes'] = FALSE;
 
-$route['api/user/login'] = 'api/Auth/login';
-$route['api/user/register'] = 'api/Auth/register';
-$route['api/user/logout'] = 'api/Auth/logout';
+$route['api/user/login'] = 'api/AuthController/login';
+$route['api/user/register'] = 'api/AuthController/register';
+$route['api/user/logout'] = 'api/AuthController/logout';
 
-$route['api/client'] = "api/Client/getClient";
-$route['api/client/register'] = "api/Client/createClient";
-$route['api/client/update'] = "api/Client/updateClient";
-$route['api/client/delete'] = "api/Client/deleteClient";
+$route['api/client'] = "api/ClientController/getClient";
+$route['api/client/register'] = "api/ClientController/createClient";
+$route['api/client/update'] = "api/ClientController/updateClient";
+$route['api/client/delete'] = "api/ClientController/deleteClient";
