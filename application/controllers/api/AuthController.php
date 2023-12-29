@@ -1,9 +1,12 @@
 <?php
 
+use application\repositories\AuthRepository;
 defined('BASEPATH') OR exit('No direct script access allowed');
 
 class AuthController extends CI_Controller
 {
+
+    private $authRepository;
 
     public function __construct($config = "rest")
     {
@@ -12,6 +15,7 @@ class AuthController extends CI_Controller
         header("Access-Control-Allow-Headers: Content-Type, Content-Length, Accept-Encoding,Authorization");
         parent::__construct();
         $this->load->model('UserModel');
+        $this->authRepository = new AuthRepository();
     }
 
     public function login()
@@ -22,10 +26,11 @@ class AuthController extends CI_Controller
                 if (!$validationResult['status']) {
                     return $this->sendJson(['response' => $validationResult['message']], 400);
                 }
-                $email = $this->input->post('username');
+                $email = $this->input->post('email');
                 $password = $this->input->post('password');
-                if ($this->attemptLogin($email, $password)) {
-                    $this->handleSuccessfulLogin($email);
+                if ($this->authRepository->resolveAuthLogin($email, $password)) {
+                    $response = $this->authRepository->getAuthenticationIdFromEmail($email);
+                    return $this->sendJson(['response' => $response], 200);
                 } else {
                     return $this->sendJson(['response' => 'Login ou senha incorretos.'], 404);
                 }
@@ -45,7 +50,7 @@ class AuthController extends CI_Controller
             if (!$this->validateRegistrationInput($inputData)) {
                 return $this->sendJson(['response' => validation_errors()], 400);
             }
-            $userId = $this->createUserAndReturnId($inputData);
+            $userId = $this->authRepository->createUserAndReturnId($inputData);
             if ($userId) {
                 $tokenData = $this->generateUserToken($userId, $inputData['username']);
                 $response['access_token'] = $tokenData;
@@ -78,11 +83,10 @@ class AuthController extends CI_Controller
       return  $this->output->set_header('Content-Type: application/json; charset=utf-8')->set_output(json_encode($data));
     }
 
-
     private function validateLoginInput()
     {
         $this->form_validation->set_rules('password', 'Senha', 'required');
-        $this->form_validation->set_rules('username', 'Usuário', 'required');
+        $this->form_validation->set_rules('email', 'Email', 'required');
 
         if ($this->form_validation->run() == false) {
             return ['status' => false, 'message' => 'Por favor, envie todos os parâmetros necessários'];
@@ -90,35 +94,6 @@ class AuthController extends CI_Controller
 
         return ['status' => true];
     }
-
-    private function attemptLogin(string $email, string $password)
-    {
-        return $this->UserModel->resolveUserLogin($email, $password);
-    }
-
-    private function handleSuccessfulLogin(string $email)
-    {
-        $userId = $this->UserModel->getUserIdFromEmail($email);
-        $user = $this->UserModel->getUser($userId);
-        $this->setUserSession($user);
-        $tokenData['uid'] = $userId;
-        $tokenData['username'] = $user->username;
-        $tokenData = $this->authorization_token->generateToken($tokenData);
-        $response['access_token'] = $tokenData;
-        $response['status'] = true;
-        $response['message'] = 'Login realizado com sucesso!';
-        $response['note'] = 'Você está logado';
-        return $this->sendJson(['response' => $response], 200);
-    }
-
-    private function setUserSession($user)
-    {
-        $_SESSION['user_id'] = (int) $user->id;
-        $_SESSION['username'] = (string) $user->username;
-        $_SESSION['logged_in'] = (bool) true;
-        $_SESSION['is_confirmed'] = (bool) $user->is_confirmed;
-    }
-
 
     private function validateRegistrationInput(array $inputData)
     {
@@ -134,13 +109,6 @@ class AuthController extends CI_Controller
         return $this->form_validation->run();
     }
 
-    private function createUserAndReturnId(array $inputData)
-    {
-        $username = $inputData['username'];
-        $email = $inputData['email'];
-        $password = $inputData['password'];
-        return $this->UserModel->createUser($username, $email, $password);
-    }
 
     private function generateUserToken(int $userId, string $username)
     {
