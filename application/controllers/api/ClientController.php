@@ -1,7 +1,7 @@
 <?php
 
-use application\repositories\AddressRepository;
-use application\repositories\ClientRepository;
+use Restserver\repositories\AddressRepository;
+use Restserver\repositories\ClientRepository;
 defined('BASEPATH') OR exit('No direct script access allowed');
 
 class ClientController extends CI_Controller {
@@ -144,9 +144,10 @@ class ClientController extends CI_Controller {
     {
         $rules = [
             ['field' => 'name', 'label' => 'Name', 'rules' => 'required', 'errors' => ['required' => 'O campo {field} é obrigatório.']],
-            ['field' => 'email', 'label' => 'Email', 'rules' => 'required|valid_email', 'errors' => [
+            ['field' => 'email', 'label' => 'Email', 'rules' => 'required|valid_email|is_unique[users.email]', 'errors' => [
                 'required' => 'O campo {field} é obrigatório.',
-                'valid_email' => 'Por favor, forneça um endereço de e-mail válido.'
+                'valid_email' => 'Por favor, forneça um endereço de e-mail válido.',
+                'is_unique' => 'Este e-mail já está em uso. Por favor, escolha outro.'
             ]],
             ['field' => 'phone', 'label' => 'Phone', 'rules' => 'required', 'errors' => ['required' => 'O campo {field} é obrigatório.']],
         ];

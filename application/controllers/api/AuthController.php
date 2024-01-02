@@ -1,12 +1,12 @@
 <?php
 
 use application\repositories\AuthRepository;
+
 defined('BASEPATH') OR exit('No direct script access allowed');
 
 class AuthController extends CI_Controller
 {
-
-    private AuthRepository $authRepository;
+    public AuthRepository $authRepository;
 
     public function __construct($config = "rest")
     {
@@ -91,7 +91,6 @@ class AuthController extends CI_Controller
         if ($this->form_validation->run() == false) {
             return ['status' => false, 'message' => 'Por favor, envie todos os parâmetros necessários'];
         }
-
         return ['status' => true];
     }
 

@@ -1,16 +1,14 @@
 <?php
 
 namespace application\repositories;
-
 use application\interfaces\AuthRepositoryInterface;
 use application\models\UserModel;
+
 
 
 class AuthRepository implements AuthRepositoryInterface
 {
     public function __construct() {
-        $this->CI =& get_instance();
-        $this->CI->load->database();
         $this->load->model('UserModel');
     }
 

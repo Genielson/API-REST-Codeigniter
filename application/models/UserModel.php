@@ -1,6 +1,4 @@
 <?php
-namespace application\models;
-
 defined('BASEPATH') OR exit('No direct script access allowed');
 
 /**
