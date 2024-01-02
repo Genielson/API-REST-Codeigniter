@@ -54,29 +54,29 @@ class UserModel extends CI_Model {
 	 * resolveUserLogin function.
 	 * 
 	 * @access public
-	 * @param  string $username
+	 * @param  string $email
 	 * @param  string $password
 	 * @return bool
 	 */
-	public function resolveUserLogin(string $username, string $password): bool {	
+	public function resolveUserLogin(string $email, string $password): bool {
 		$this->db->select('password');
 		$this->db->from('users');
-		$this->db->where('username', $username);
+		$this->db->where('email', $email);
 		$hash = $this->db->get()->row('password');
 		return $this->verifyPasswordHash($password, $hash);
 	}
 
 	/**
-	 * getUserIdFromUserName function.
+	 * getUserIdFromEmail function.
 	 * 
 	 * @access public
-	 * @param  string $username
+	 * @param  string $email
 	 * @return int|null
 	 */
-	public function getUserIdFromUserName(string $username): ?int {
+	public function getUserIdFromEmail(string $email): ?int {
 		$this->db->select('id');
 		$this->db->from('users');
-		$this->db->where('username', $username);
+		$this->db->where('email', $email);
 		return $this->db->get()->row('id');	
 	}
 

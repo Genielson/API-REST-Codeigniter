@@ -22,10 +22,10 @@ class Auth extends CI_Controller
                 if (!$validationResult['status']) {
                     return $this->sendJson(['response' => $validationResult['message']], 400);
                 }
-                $username = $this->input->post('username');
+                $email = $this->input->post('email');
                 $password = $this->input->post('password');
-                if ($this->attemptLogin($username, $password)) {
-                    $this->handleSuccessfulLogin($username);
+                if ($this->attemptLogin($email, $password)) {
+                    $this->handleSuccessfulLogin($email);
                 } else {
                     return $this->sendJson(['response' => 'Login ou senha incorretos.'], 404);
                 }
@@ -83,8 +83,12 @@ class Auth extends CI_Controller
 
     private function validateLoginInput()
     {
-        $this->form_validation->set_rules('password', 'Senha', 'required');
-        $this->form_validation->set_rules('username', 'Usuário', 'required');
+        $this->form_validation->set_rules('password', 'Senha', 'trim|required', [
+            'required' => 'O campo {field} é obrigatório.'
+        ]);
+        $this->form_validation->set_rules('email', 'Email', 'trim|required', [
+            'required' => 'O campo {field} é obrigatório.'
+        ]);
 
         if ($this->form_validation->run() == false) {
             return ['status' => false, 'message' => 'Por favor, envie todos os parâmetros necessários'];
@@ -93,14 +97,14 @@ class Auth extends CI_Controller
         return ['status' => true];
     }
 
-    private function attemptLogin($username, $password)
+    private function attemptLogin(string $email, string $password)
     {
-        return $this->UserModel->resolveUserLogin($username, $password);
+        return $this->UserModel->resolveUserLogin($email, $password);
     }
 
-    private function handleSuccessfulLogin($username)
+    private function handleSuccessfulLogin(string $email)
     {
-        $userId = $this->UserModel->getUserIdFromUsername($username);
+        $userId = $this->UserModel->getUserIdFromEmail($email);
         $user = $this->UserModel->getUser($userId);
 
         $this->setUserSession($user);
