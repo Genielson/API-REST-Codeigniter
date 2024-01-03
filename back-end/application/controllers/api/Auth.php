@@ -16,6 +16,8 @@ class Auth extends CI_Controller
 
     public function login()
     {
+        $data = json_decode($this->input->raw_input_stream, true);
+        $_POST = $data;
         try {
             if ($this->input->method() === 'post') {
                 $validationResult = $this->validateLoginInput();
