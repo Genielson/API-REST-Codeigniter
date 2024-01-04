@@ -8,7 +8,7 @@
         <meta name="description" content="">
         <meta name="author" content="">
 
-        <title>Startmin - Bootstrap Admin Theme</title>
+        <title>Sistema de cadastro de clientes</title>
 
         <!-- Bootstrap Core CSS -->
         <link href="../css/bootstrap.min.css" rel="stylesheet">
@@ -113,7 +113,7 @@
                         <ul class="dropdown-menu dropdown-user">
                             <li class="divider"></li>
                             <li>
-                                <a href="login.html"><i class="fa fa-sign-out fa-fw"></i> Logout</a>
+                                <a href="#" id="logoutBtn"><i class="fa fa-sign-out fa-fw"></i> Logout</a>
                             </li>
                         </ul>
                     </li>
@@ -252,6 +252,19 @@
 
         </div>
         <!-- /#wrapper -->
+
+        <script>
+
+            function logout() {
+                localStorage.removeItem('accessToken');
+                window.location.href = 'login.html';
+            }
+
+            document.getElementById('logoutBtn').addEventListener('click', function(event) {
+                event.preventDefault();
+                logout();
+            });
+        </script>
 
         <!-- jQuery -->
         <script src="../js/jquery.min.js"></script>
