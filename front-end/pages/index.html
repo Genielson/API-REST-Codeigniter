@@ -255,6 +255,16 @@
 
         <script>
 
+            document.addEventListener('DOMContentLoaded', function () {
+                function checkLoginStatus() {
+                    var accessToken = localStorage.getItem('accessToken');
+                    if (!accessToken) {
+                        window.location.href = 'login.html';
+                    }
+                }
+                checkLoginStatus();
+            });
+
             function logout() {
                 localStorage.removeItem('accessToken');
                 window.location.href = 'login.html';
