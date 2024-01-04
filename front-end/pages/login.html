@@ -51,7 +51,7 @@
                                     </div>
                                     <!-- Change this to a button or input when using this as a form -->
                                     <button type="button" onclick="login()" class="btn btn-lg btn-success btn-block">Login</button>
-                                    <button type="button" onclick="login()" class="btn btn-lg btn-info btn-block">Cadastre-se</button>
+                                    <button type="button" onclick="redirectForNewUsers()" class="btn btn-lg btn-info btn-block">Cadastre-se</button>
                                 </fieldset>
                             </form>
                         </div>
@@ -61,6 +61,10 @@
         </div>
 
         <script>
+
+            function redirectForNewUsers() {
+                window.location.href = 'registrar-usuario.html';
+            }
 
             function showError(message) {
                 var errorMessageDiv = document.getElementById("error-message");

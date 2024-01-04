@@ -7,18 +7,21 @@ class Auth extends CI_Controller
 
     public function __construct($config = "rest")
     {
-        header("Access-Control-Allow-Origin: *");
+
+        header("Access-Control-Allow-Origin: null");
         header("Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE");
         header("Access-Control-Allow-Headers: Content-Type, Content-Length, Accept-Encoding,Authorization");
         parent::__construct();
+
         $this->load->model('UserModel');
     }
 
     public function login()
     {
-        $data = json_decode($this->input->raw_input_stream, true);
-        $_POST = $data;
+
         try {
+            $data = json_decode($this->input->raw_input_stream, true);
+            $_POST = $data;
             if ($this->input->method() === 'post') {
                 $validationResult = $this->validateLoginInput();
                 if (!$validationResult['status']) {
@@ -40,13 +43,29 @@ class Auth extends CI_Controller
         }
     }
 
+
     public function register()
     {
+        $data = json_decode($this->input->raw_input_stream, true);
+        $_POST = $data;
+
+        header("Access-Control-Allow-Origin: *");
+        header("Access-Control-Allow-Methods: POST, GET, OPTIONS, DELETE, PUT");
+        header("Access-Control-Allow-Headers: Content-Type, Content-Length, Accept-Encoding, Authorization");
+
+        if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+            http_response_code(200);
+            exit();
+        }
         try {
+
             $inputData = $this->input->post();
+            /*
             if (!$this->validateRegistrationInput($inputData)) {
                 return $this->sendJson(['response' => validation_errors()], 400);
             }
+            */
+
             $userId = $this->createUserAndReturnId($inputData);
             if ($userId) {
                 $tokenData = $this->generateUserToken($userId, $inputData['username']);
