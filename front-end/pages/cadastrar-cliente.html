@@ -33,6 +33,19 @@
         <!--[if lt IE 9]>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/respond.js/1.4.2/respond.min.js"></script>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                function checkLoginStatus() {
+                    var accessToken = localStorage.getItem('accessToken');
+                    if (!accessToken) {
+                        window.location.href = 'login.html';
+                    }
+                }
+                checkLoginStatus();
+            });
+        </script>
+
         <![endif]-->
     </head>
 
@@ -104,51 +117,55 @@
                                     
                                 </div>
                                 <div class="panel-body">
+                                    <div id="error-message" class="alert alert-danger" style="display: none;"></div>
+                                    <div id="success-alert" class="alert alert-success" style="display: none;">
+                                        Usuário cadastrado com sucesso!
+                                    </div>
                                     <div class="row">
                                         <div class="col-lg-10">
                                             <form role="form">
                                                 <div class="form-group">
                                                     <label>Nome</label>
-                                                    <input class="form-control" placeholder="Nome" type="text" name="name">
+                                                    <input class="form-control" id="name" placeholder="Nome" type="text" name="name">
                                                     
                                                 </div>
                                                 <div class="form-group">
                                                     <label>E-mail</label>
-                                                    <input type="email" name="email" class="form-control" placeholder="exemplo@mail.com">
+                                                    <input type="email" name="email"  id="email"  class="form-control" placeholder="exemplo@mail.com">
                                                 </div>
 
                                                  <div class="form-group">
                                                     <label>CEP</label>
-                                                    <input class="form-control" type="text" name="cep">
+                                                    <input class="form-control" id="cep" type="text" name="cep">
                                                 </div>
 
                                                 <div class="form-group">
                                                     <label>Logradouro</label>
-                                                    <input class="form-control" type="text" name="street">
+                                                    <input class="form-control" id="street" type="text" name="street">
                                                 </div>
 
                                                 <div class="form-group">
                                                     <label>Complemento</label>
-                                                    <input class="form-control" type="text" name="complement">
+                                                    <input class="form-control"  id="complement" type="text" name="complement">
                                                 </div>
 
                                                 <div class="form-group">
                                                     <label>Bairro</label>
-                                                    <input class="form-control" type="text" name="neighborhood">
+                                                    <input class="form-control" id="neighborhood" type="text" name="neighborhood">
                                                 </div>
 
                                                 <div class="form-group">
                                                     <label>Localidade</label>
-                                                    <input class="form-control" type="text" name="city">
+                                                    <input class="form-control" id="city" type="text" name="city">
                                                 </div>
 
                                                 <div class="form-group">
                                                     <label>UF</label>
-                                                    <input class="form-control" type="text" name="state">
+                                                    <input class="form-control" id="state" type="text" name="state">
                                                 </div>
 
-                                                <button type="submit" class="btn btn-success">Salvar</button>
-                                                
+                                                <button type="button" onclick="registerClient()" class="btn btn-success">Salvar</button>
+
                                             </form>
                                         </div>
                                         <!-- /.col-lg-6 (nested) -->
@@ -170,6 +187,75 @@
 
         </div>
         <!-- /#wrapper -->
+
+        <script>
+            function registerClient() {
+                var name = document.getElementById("name").value;
+                var email = document.getElementById("email").value;
+                var cep = document.getElementById("cep").value;
+                var street = document.getElementById("street").value;
+                var complement = document.getElementById("complement").value;
+                var neighborhood = document.getElementById("neighborhood").value;
+                var city = document.getElementById("city").value;
+                var state = document.getElementById("state").value;
+
+                if (!name || !email || !cep || !street
+                    || !complement || !neighborhood || !city || !state) {
+                    showErrorMessage("Por favor, preencha todos os campos.");
+                    return;
+                }
+
+                var requestBody = {
+                    name: name,
+                    email: email,
+                    cep: cep,
+                    street: street,
+                    complement: complement,
+                    neighborhood: neighborhood,
+                    city: city,
+                    state: state
+                };
+
+                fetch('http://localhost:8000/api/client/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestBody)
+                })
+                    .then(response => {
+                        const contentType = response.headers.get('content-type');
+                        if (contentType && contentType.includes('application/json')) {
+                            return response.json();
+                        } else {
+                            return Promise.resolve({});
+                        }
+                    })
+                    .then(data => {
+                        console.log(data);
+                        if (data.response) {
+                            var successAlert = document.getElementById("success-alert");
+                            successAlert.style.display = "block";
+                            window.scrollTo(0, 0);
+                            setTimeout(function () {
+                                window.location.href = 'index.html';
+                            }, 2000);
+                        } else {
+                            showError(data.response);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erro na requisição:', error);
+                    });
+
+            }
+
+            function showErrorMessage(message) {
+                var errorMessageDiv = document.getElementById("error-message");
+                errorMessageDiv.innerHTML = message;
+                errorMessageDiv.style.display = "block";
+            }
+        </script>
 
         <!-- jQuery -->
         <script src="../js/jquery.min.js"></script>

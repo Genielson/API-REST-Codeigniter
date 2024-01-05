@@ -46,25 +46,16 @@ class Auth extends CI_Controller
 
     public function register()
     {
-        $data = json_decode($this->input->raw_input_stream, true);
-        $_POST = $data;
 
-        header("Access-Control-Allow-Origin: *");
-        header("Access-Control-Allow-Methods: POST, GET, OPTIONS, DELETE, PUT");
-        header("Access-Control-Allow-Headers: Content-Type, Content-Length, Accept-Encoding, Authorization");
-
-        if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
-            http_response_code(200);
-            exit();
-        }
         try {
 
+            $data = json_decode($this->input->raw_input_stream, true);
+            $_POST = $data;
             $inputData = $this->input->post();
-            /*
-            if (!$this->validateRegistrationInput($inputData)) {
+
+            if (!$this->validateRegistrationInput()) {
                 return $this->sendJson(['response' => validation_errors()], 400);
             }
-            */
 
             $userId = $this->createUserAndReturnId($inputData);
             if ($userId) {
@@ -133,7 +124,6 @@ class Auth extends CI_Controller
         $tokenData['uid'] = $userId;
         $tokenData['username'] = $user->username;
         $tokenData = $this->authorization_token->generateToken($tokenData);
-
         $response['access_token'] = $tokenData;
         $response['status'] = true;
         $response['message'] = 'Login realizado com sucesso!';
@@ -151,12 +141,13 @@ class Auth extends CI_Controller
     }
 
 
-    private function validateRegistrationInput(array $inputData)
+    private function validateRegistrationInput()
     {
         $this->form_validation->set_rules('username', 'Username', 'trim|required', ['required' => 'O campo {field} é obrigatório.']);
-        $this->form_validation->set_rules('email', 'Email', 'trim|required|valid_email', [
+        $this->form_validation->set_rules('email', 'Email', 'trim|required|valid_email|is_unique[users.email]', [
             'required' => 'O campo {field} é obrigatório.',
-            'valid_email' => 'Por favor, forneça um endereço de e-mail válido.'
+            'valid_email' => 'Por favor, forneça um endereço de e-mail válido.',
+            'is_unique' => 'Este e-mail já está em uso.'
         ]);
         $this->form_validation->set_rules('password', 'Password', 'trim|required|min_length[6]', [
             'required' => 'O campo {field} é obrigatório.',
@@ -170,7 +161,6 @@ class Auth extends CI_Controller
         $username = $inputData['username'];
         $email = $inputData['email'];
         $password = $inputData['password'];
-
         return $this->UserModel->createUser($username, $email, $password);
     }
 
@@ -178,7 +168,6 @@ class Auth extends CI_Controller
     {
         $tokenData['uid'] = $userId;
         $tokenData['username'] = $username;
-
         return $this->authorization_token->generateToken($tokenData);
     }
 }
