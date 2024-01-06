@@ -62,3 +62,5 @@ $route['api/client/get/(:any)'] = "api/Client/getClient/$1";
 $route['api/client/register'] = "api/Client/createClient";
 $route['api/client/update'] = "api/Client/updateClient";
 $route['api/client/delete'] = "api/Client/deleteClient";
+
+$route['api/all/count'] = 'api/Client/getTotalUsersAndClients';

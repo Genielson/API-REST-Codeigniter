@@ -171,7 +171,7 @@
                                         <i class="fa fa-tasks fa-5x"></i>
                                     </div>
                                     <div class="col-xs-9 text-right">
-                                        <div class="huge">0</div>
+                                        <div id="totUser" class="huge">0</div>
                                         <div>Total usuários</div>
                                     </div>
                                 </div>
@@ -192,7 +192,7 @@
                                         <i class="fa fa-tasks fa-5x"></i>
                                     </div>
                                     <div class="col-xs-9 text-right">
-                                        <div class="huge">0</div>
+                                        <div id="totClient" class="huge">0</div>
                                         <div>Total clientes </div>
                                     </div>
                                 </div>
@@ -239,6 +239,30 @@
             var userNameElement = document.getElementById('userNamePlaceholder');
             var userName = localStorage.getItem('username');
             userNameElement.innerHTML = '<i class="fa fa-user fa-fw"></i> ' + userName + ' <b class="caret"></b>';
+        </script>
+
+        <script>
+
+            function fetchClientsAndUsers() {
+                const accessToken = localStorage.getItem('accessToken');
+                const encodedToken = encodeURIComponent(accessToken);
+                fetch('http://localhost:8000/api/all/count', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': '' + encodedToken
+                    }
+                }).then(response => response.json())
+                    .then(data => {
+                        document.getElementById("totUser").innerText = data.response.totalUser;
+                        document.getElementById("totClient").innerText = data.response.totalClient;
+                    })
+                    .catch(error => {
+                        console.error('Erro na requisição:', error);
+                    });
+            }
+            fetchClientsAndUsers();
+
         </script>
 
         <!-- jQuery -->

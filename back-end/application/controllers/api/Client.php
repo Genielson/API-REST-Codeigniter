@@ -14,6 +14,7 @@ class Client extends CI_Controller {
         $this->load->library('Authorization_Token');
         $this->load->model('ClientModel');
         $this->load->model('AddressModel');
+        $this->load->model('UserModel');
     }
 
     public function getClient(int $id = null)
@@ -37,6 +38,27 @@ class Client extends CI_Controller {
             return $this->sendJson(['response' =>
                 'Ocorreu um erro ao recuperar o cliente.'], 500);
         }
+    }
+
+    public function getTotalUsersAndClients(){
+
+        try {
+            if ($this->input->method() === 'get') {
+                $headers = $this->input->request_headers();
+                if (!$this->isValidAuthorization($headers)) {
+                    return $this->sendJson(['response' => 'Token é necessário.'], 404);
+                }
+                $this->data['totalClient'] = $this->ClientModel->getTotalClients();
+                $this->data['totalUser'] = $this->UserModel->getTotalUsers();
+                return $this->sendJson(['response' => $this->data], 200);
+            }else{
+                return $this->sendJson(['response' => 'Utilize o metodo HTTP correto.'], 500);
+            }
+        }catch (Exception $e){
+            return $this->sendJson(['response' =>
+                'Ocorreu um erro ao recuperar o cliente.'], 500);
+        }
+
     }
 
 

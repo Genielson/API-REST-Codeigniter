@@ -84,6 +84,16 @@ class UserModel extends CI_Model {
 		return $this->db->get()->row('id');	
 	}
 
+    /**
+     * Obtém o total de usuários registrados na tabela 'users'.
+     *
+     * @access public
+     * @return int
+     */
+    public function getTotalUsers():int {
+        return $this->db->count_all('users');
+    }
+
 	/**
 	 * getUser function.
 	 * 

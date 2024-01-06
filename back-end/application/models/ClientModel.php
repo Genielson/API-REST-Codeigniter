@@ -34,6 +34,12 @@ class ClientModel extends CI_Model {
     }
 
 
+
+    public function getTotalClients():int {
+        return $this->db->count_all('clients');
+    }
+
+
     public function update(int $id, array $data): int {
         $this->db->update('clients', $data, ['id' => $id]);
         return $this->db->affected_rows();
