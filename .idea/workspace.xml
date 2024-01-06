@@ -6,14 +6,16 @@
   <component name="ChangeListManager">
     <list default="true" id="99e68170-3e99-4514-a4ee-4425e6069a18" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/back-end/application/config/routes.php" beforeDir="false" afterPath="$PROJECT_DIR$/back-end/application/config/routes.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/back-end/application/controllers/api/Auth.php" beforeDir="false" afterPath="$PROJECT_DIR$/back-end/application/controllers/api/Auth.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/back-end/application/controllers/api/Client.php" beforeDir="false" afterPath="$PROJECT_DIR$/back-end/application/controllers/api/Client.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/back-end/application/controllers/api/User.php" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/back-end/application/models/UserModel.php" beforeDir="false" afterPath="$PROJECT_DIR$/back-end/application/models/UserModel.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/back-end/application/models/AddressModel.php" beforeDir="false" afterPath="$PROJECT_DIR$/back-end/application/models/AddressModel.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/back-end/application/models/ClientModel.php" beforeDir="false" afterPath="$PROJECT_DIR$/back-end/application/models/ClientModel.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/front-end/pages/atualizar-cliente.html" beforeDir="false" afterPath="$PROJECT_DIR$/front-end/pages/atualizar-cliente.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/front-end/pages/cadastrar-cliente.html" beforeDir="false" afterPath="$PROJECT_DIR$/front-end/pages/cadastrar-cliente.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/front-end/pages/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/front-end/pages/index.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/front-end/pages/lista-clientes.html" beforeDir="false" afterPath="$PROJECT_DIR$/front-end/pages/lista-clientes.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/front-end/pages/login.html" beforeDir="false" afterPath="$PROJECT_DIR$/front-end/pages/login.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -88,7 +90,7 @@
       <workItem from="1703193378402" duration="1665000" />
       <workItem from="1703195796548" duration="3356000" />
       <workItem from="1703627105563" duration="38628000" />
-      <workItem from="1703872111670" duration="78967000" />
+      <workItem from="1703872111670" duration="109350000" />
     </task>
     <servers />
   </component>

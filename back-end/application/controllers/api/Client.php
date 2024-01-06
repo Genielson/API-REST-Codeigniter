@@ -7,7 +7,7 @@ class Client extends CI_Controller {
     public $data;
 
     public function __construct($config="rest") {
-        header("Access-Control-Allow-Origin: null");
+        header("Access-Control-Allow-Origin:null");
         header("Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE");
         header("Access-Control-Allow-Headers: Content-Type, Content-Length, Accept-Encoding,Authorization");
         parent::__construct();
@@ -16,7 +16,7 @@ class Client extends CI_Controller {
         $this->load->model('AddressModel');
     }
 
-    public function getClient()
+    public function getClient(int $id = null)
     {
 
         try {
@@ -28,8 +28,6 @@ class Client extends CI_Controller {
                 if (!$this->isValidAuthorization($headers)) {
                     return $this->sendJson(['response' => 'Token é necessário.'], 404);
                 }
-
-                $id = $this->input->get('id');
                 $this->data = $this->getClientData($id);
                 return $this->sendJson(['response' => $this->data], 200);
             }else{
@@ -104,17 +102,19 @@ class Client extends CI_Controller {
 
     public function deleteClient()
     {
+
         try {
             $data = json_decode($this->input->raw_input_stream, true);
             $_POST = $data;
             if ($this->input->method() === 'delete') {
                 $headers = $this->input->request_headers();
                 $id = $this->input->post('id');
+                //return $this->sendJson(['data' => $id]);exit;
                 if (!$this->isValidAuthorization($headers)) {
                     return $this->sendJson(['response' => 'Token é necessário.'], 404);
                 }
-                if (!$this->isValidClientId($id)) {
-                    return $this->sendJson(['response' => validation_errors()], 400);
+                if (!isset($id) || $id == NULL ) {
+                    return $this->sendJson(['response' => 'Houve um erro'], 400);
                 }
                 $existingClient = $this->getClientById($id);
                 if (!$existingClient) {
@@ -143,8 +143,7 @@ class Client extends CI_Controller {
             ['field' => 'email', 'label' => 'Email', 'rules' => 'required|valid_email', 'errors' => [
                 'required' => 'O campo {field} é obrigatório.',
                 'valid_email' => 'Por favor, forneça um endereço de e-mail válido.'
-            ]],
-            ['field' => 'phone', 'label' => 'Telefone', 'rules' => 'required', 'errors' => ['required' => 'O campo {field} é obrigatório.']],
+            ]]
         ];
         $this->form_validation->set_rules($rules);
         return $this->form_validation->run();
@@ -161,16 +160,9 @@ class Client extends CI_Controller {
             'state' => $input['state'] ?? null,
             'id_client' => $idClient,
         ];
-        $idAddress = $this->AddressModel->insert($addressData);
-        $this->ClientModel->update($idClient,['id_address' => $idAddress]);
+        $this->AddressModel->insert($addressData);
     }
 
-    private function isValidClientId()
-    {
-        $this->form_validation->set_rules('id', 'Id', 'required');
-        $this->form_validation->set_message('required', 'O campo {field} é obrigatório.');
-        return $this->form_validation->run();
-    }
 
     private function getClientData(int $id = null)
     {
@@ -208,8 +200,9 @@ class Client extends CI_Controller {
 
     private function deleteClientAndAddress(int $id)
     {
-        $this->ClientModel->delete($id);
         $this->AddressModel->delete($id);
+        $this->ClientModel->delete($id);
+
     }
 
 

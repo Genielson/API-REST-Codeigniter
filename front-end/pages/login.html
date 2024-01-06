@@ -99,9 +99,8 @@
                         console.log(data);
                         if (data.response.access_token) {
                             console.log(data.response)
-                            // Se o login for bem-sucedido, armazene o token no localStorage
                             localStorage.setItem('accessToken', data.response.access_token);
-                            // Redirecione para a página index.html
+                            localStorage.setItem('username', data.response.username);
                             window.location.href = 'index.html';
                         } else {
                             showError(data.response);

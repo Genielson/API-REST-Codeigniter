@@ -7,12 +7,10 @@ class Auth extends CI_Controller
 
     public function __construct($config = "rest")
     {
-
         header("Access-Control-Allow-Origin: null");
         header("Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE");
         header("Access-Control-Allow-Headers: Content-Type, Content-Length, Accept-Encoding,Authorization");
         parent::__construct();
-
         $this->load->model('UserModel');
     }
 
@@ -87,7 +85,7 @@ class Auth extends CI_Controller
             }
     }
 
-    private function sendJson($data)
+    private function sendJson(array $data)
     {
       return  $this->output->set_header('Content-Type: application/json; charset=utf-8')->set_output(json_encode($data));
     }
@@ -125,6 +123,7 @@ class Auth extends CI_Controller
         $tokenData['username'] = $user->username;
         $tokenData = $this->authorization_token->generateToken($tokenData);
         $response['access_token'] = $tokenData;
+        $response['username'] = $user->username;
         $response['status'] = true;
         $response['message'] = 'Login realizado com sucesso!';
         $response['note'] = 'Você está logado';
@@ -164,7 +163,7 @@ class Auth extends CI_Controller
         return $this->UserModel->createUser($username, $email, $password);
     }
 
-    private function generateUserToken($userId, $username)
+    private function generateUserToken(int $userId, string $username)
     {
         $tokenData['uid'] = $userId;
         $tokenData['username'] = $username;

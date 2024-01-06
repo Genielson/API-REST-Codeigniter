@@ -15,16 +15,21 @@ class ClientModel extends CI_Model {
 
     public function getClientById(int $id) {
         $query = $this->db->get_where('clients', array('id' => $id));
+
         return $query->row_array();
     }
 
 
     public function show(int $id = 0) {
         if (!empty($id)) {
-            $result = $this->db->get_where("clients", ['id' => $id])->row_array();
+            $query = $this->db->query("SELECT * FROM clients c left join addresses a on c.id = a.id_client 
+         WHERE c.id = ?", array($id));
+            $result = $query->row_array();
         } else {
-            $result = $this->db->get("clients")->result();
+            $result = $this->db->query("SELECT * FROM clients c left join addresses a on c.id = a.id_client 
+        ")->result();
         }
+
         return $result;
     }
 

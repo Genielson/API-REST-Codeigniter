@@ -15,7 +15,7 @@ class AddressModel extends CI_Model
     }
 
     public function update(int $id, array $data): int {
-        $this->db->update('addresses', $data, ['id' => $id]);
+        $this->db->update('addresses', $data, ['id_client' => $id]);
         return $this->db->affected_rows();
     }
 

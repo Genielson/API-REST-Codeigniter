@@ -69,7 +69,7 @@
                 <ul class="nav navbar-right navbar-top-links">
                     
                     <li class="dropdown">
-                        <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                        <a class="dropdown-toggle" id="userNamePlaceholder" data-toggle="dropdown" href="#">
                             <i class="fa fa-user fa-fw"></i> secondtruth <b class="caret"></b>
                         </a>
                         <ul class="dropdown-menu dropdown-user">
@@ -119,24 +119,29 @@
                                 <div class="panel-body">
                                     <div id="error-message" class="alert alert-danger" style="display: none;"></div>
                                     <div id="success-alert" class="alert alert-success" style="display: none;">
-                                        Usuário cadastrado com sucesso!
+                                        Cliente cadastrado com sucesso!
                                     </div>
                                     <div class="row">
                                         <div class="col-lg-10">
                                             <form role="form">
                                                 <div class="form-group">
-                                                    <label>Nome</label>
+                                                    <label>Nome*</label>
                                                     <input class="form-control" id="name" placeholder="Nome" type="text" name="name">
                                                     
                                                 </div>
                                                 <div class="form-group">
-                                                    <label>E-mail</label>
+                                                    <label>E-mail*</label>
                                                     <input type="email" name="email"  id="email"  class="form-control" placeholder="exemplo@mail.com">
+                                                </div>
+
+                                                <div class="form-group">
+                                                    <label>Telefone</label>
+                                                    <input type="text" name="phone"  id="phone"  class="form-control" >
                                                 </div>
 
                                                  <div class="form-group">
                                                     <label>CEP</label>
-                                                    <input class="form-control" id="cep" type="text" name="cep">
+                                                    <input class="form-control" id="cep" type="text" name="cep" onblur="consultaCEP()">
                                                 </div>
 
                                                 <div class="form-group">
@@ -192,6 +197,7 @@
             function registerClient() {
                 var name = document.getElementById("name").value;
                 var email = document.getElementById("email").value;
+                var phone = document.getElementById("phone").value;
                 var cep = document.getElementById("cep").value;
                 var street = document.getElementById("street").value;
                 var complement = document.getElementById("complement").value;
@@ -199,8 +205,7 @@
                 var city = document.getElementById("city").value;
                 var state = document.getElementById("state").value;
 
-                if (!name || !email || !cep || !street
-                    || !complement || !neighborhood || !city || !state) {
+                if (!name || !email) {
                     showErrorMessage("Por favor, preencha todos os campos.");
                     return;
                 }
@@ -208,6 +213,7 @@
                 var requestBody = {
                     name: name,
                     email: email,
+                    phone:phone,
                     cep: cep,
                     street: street,
                     complement: complement,
@@ -216,10 +222,14 @@
                     state: state
                 };
 
+                const accessToken = localStorage.getItem('accessToken');
+                const encodedToken = encodeURIComponent(accessToken);
+
                 fetch('http://localhost:8000/api/client/register', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'Authorization': '' + encodedToken
                     },
                     body: JSON.stringify(requestBody)
                 })
@@ -255,6 +265,43 @@
                 errorMessageDiv.innerHTML = message;
                 errorMessageDiv.style.display = "block";
             }
+
+            var userNameElement = document.getElementById('userNamePlaceholder');
+            var userName = localStorage.getItem('username');
+            userNameElement.innerHTML = '<i class="fa fa-user fa-fw"></i> ' + userName + ' <b class="caret"></b>';
+        </script>
+
+
+            <script>
+                async function consultaCEP() {
+                var cep = document.getElementById('cep').value.replace(/\D/g, '');
+
+                if (cep.length !== 8) {
+                alert('CEP inválido. Certifique-se de digitar 8 números.');
+                return;
+            }
+
+                try {
+                // Faz a requisição usando fetch
+                const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+                const data = await response.json();
+
+                if (!("erro" in data)) {
+                // Preenche os campos do formulário
+                document.getElementById('street').value = data.logradouro;
+                document.getElementById('complement').value = data.complemento;
+                document.getElementById('neighborhood').value = data.bairro;
+                document.getElementById('city').value = data.localidade;
+                document.getElementById('state').value = data.uf;
+            } else {
+                alert('CEP não encontrado.');
+            }
+            } catch (error) {
+                console.error('Erro na requisição:', error);
+            }
+            }
+
+
         </script>
 
         <!-- jQuery -->
@@ -268,8 +315,6 @@
 
         <!-- Morris Charts JavaScript -->
         <script src="../js/raphael.min.js"></script>
-        <script src="../js/morris.min.js"></script>
-        <script src="../js/morris-data.js"></script>
 
         <!-- Custom Theme JavaScript -->
         <script src="../js/startmin.js"></script>
