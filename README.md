@@ -161,12 +161,17 @@ Este projeto foi desenvolvido utilizando as seguintes tecnologias:
 
 ### MySQL
 
-- **Versão:** (Inclua a versão específica que você está usando)
+- **Versão:** 8
 - **Descrição:** MySQL é um sistema de gerenciamento de banco de dados relacional amplamente utilizado para armazenar e recuperar dados.
 
 ### JWT (JSON Web Tokens) para Autenticação
 
 - **Descrição:** JWT é um padrão aberto (RFC 7519) que define uma maneira compacta e autocontida de representar informações entre duas partes. No contexto deste projeto, é utilizado para autenticação de usuários.
+
+- ### Bootstrap
+
+- **Descrição:** Bootstrap é um framework de design front-end que facilita o desenvolvimento de interfaces web responsivas e atraentes.
+
 
 ### VIACEP (Consulta de CEP)
 
